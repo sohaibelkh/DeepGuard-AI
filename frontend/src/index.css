@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global typography and theme-aware base styles */
+body {
+  @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+}
+
+/* Layout primitives */
+.dg-shell {
+  @apply min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+}
+
+.dg-page {
+  @apply mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
+}
+
+/* Card + surface primitives */
+.card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/70 dark:shadow-subtle;
+}
+
+.card-muted {
+  @apply rounded-xl border border-slate-200/70 bg-slate-50 dark:border-slate-800/80 dark:bg-slate-950/40;
+}
+
+/* Metrics + labels */
+.metric-label {
+  @apply text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400;
+}
+
+.metric-value {
+  @apply text-2xl font-semibold text-slate-900 dark:text-slate-50;
+}
+
+/* Generic pills/badges */
+.dg-pill {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300;
+}
+
+.dg-badge-muted {
+  @apply inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300;
+}
+
+.dg-section-header {
+  @apply flex items-center justify-between gap-3;
+}
+
+.dg-table {
+  @apply min-w-full divide-y divide-slate-200 text-xs dark:divide-slate-800;
+}
+
+.dg-table-head {
+  @apply bg-slate-50/80 text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:bg-slate-950/80 dark:text-slate-400;
+}
+
+.dg-table-row {
+  @apply transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/70;
+}
+
+.dg-input {
+  @apply h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100;
+}
+
