@@ -11,6 +11,7 @@ import { ScanHistoryPage } from './modules/history/ScanHistoryPage';
 import { ProfilePage } from './modules/profile/ProfilePage';
 import { ModelPerformancePage } from './modules/dashboard/ModelPerformancePage';
 import { ModelArchitecturePage } from './modules/dashboard/ModelArchitecturePage';
+import { ECGStreamPage } from './modules/ecg/ECGStreamPage';
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const App: React.FC = () => {
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<DashboardHome />} />
           <Route path="/dashboard/detect" element={<DetectionPage />} />
+          <Route path="/dashboard/ecg-stream" element={<ECGStreamPage />} />
           <Route path="/dashboard/history" element={<ScanHistoryPage />} />
           <Route path="/dashboard/model-performance" element={<ModelPerformancePage />} />
           <Route path="/dashboard/model-architecture" element={<ModelArchitecturePage />} />
@@ -35,4 +37,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-

@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Radio,
   Shield,
   User,
   X,
@@ -24,6 +25,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
   { label: 'ECG Diagnosis', to: '/dashboard/detect', icon: Activity },
+  { label: 'Live ECG', to: '/dashboard/ecg-stream', icon: Radio },
   { label: 'History', to: '/dashboard/history', icon: History },
   { label: 'Model performance', to: '/dashboard/model-performance', icon: LineChart },
   { label: 'Model architecture', to: '/dashboard/model-architecture', icon: Cpu },
