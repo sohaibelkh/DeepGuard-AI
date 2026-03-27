@@ -43,9 +43,15 @@ export const RegisterPage: React.FC = () => {
       await register(fullName.trim(), email.trim(), password);
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message ??
-        'Unable to create your workspace account. Please try again.';
+      const detail = err?.response?.data?.detail;
+      let message = 'Unable to create your account. Please try again.';
+      
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail) && detail.length > 0 && detail[0].msg) {
+        message = detail[0].msg;
+      }
+      
       setFormError(message);
     } finally {
       setSubmitting(false);

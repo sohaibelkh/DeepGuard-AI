@@ -15,7 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent
 
 class Settings(BaseSettings):
     # ── Database ──────────────────────────────────────────────────────────
-    DATABASE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR / 'deepguard.db'}"
+    # Ensure three slashes for absolute path on windows: sqlite+aiosqlite:///C:\...
+    DATABASE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR.as_posix()}/deepguard.db"
 
     # ── JWT / Auth ────────────────────────────────────────────────────────
     SECRET_KEY: str = "dev-secret-change-me"

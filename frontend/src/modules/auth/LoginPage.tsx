@@ -39,7 +39,15 @@ export const LoginPage: React.FC = () => {
       const redirectTo = state?.from?.pathname ?? '/dashboard';
       navigate(redirectTo, { replace: true });
     } catch (err: any) {
-      const message = err?.response?.data?.message ?? 'Unable to sign in. Check your credentials.';
+      const detail = err?.response?.data?.detail;
+      let message = 'Unable to sign in. Check your credentials.';
+      
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (Array.isArray(detail) && detail.length > 0 && detail[0].msg) {
+        message = detail[0].msg;
+      }
+      
       setFormError(message);
     } finally {
       setSubmitting(false);

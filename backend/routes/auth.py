@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 class RegisterRequest(BaseModel):
     full_name: str
-    email: str
+    email: EmailStr
     password: str
 
 
@@ -42,7 +42,7 @@ class AuthResponse(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthResponse)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Register a new user account."""
     full_name = body.full_name.strip()
@@ -51,8 +51,6 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
     if not full_name or not email or not password:
         raise HTTPException(status_code=400, detail="full_name, email and password are required")
-    if "@" not in email:
-        raise HTTPException(status_code=400, detail="Email address is invalid")
 
     existing = await db.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none():
@@ -71,7 +69,7 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.post("/login")
+@router.post("/login", response_model=AuthResponse)
 async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Authenticate with email + password."""
     identifier = body.identifier.strip().lower()
@@ -97,7 +95,12 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
 async def refresh(body: RefreshRequest, db: AsyncSession = Depends(get_db)):
     """Exchange a refresh token for a new access + refresh pair."""
     user_id = decode_token(body.refresh_token, expected_type="refresh")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
     return {
+        "user": user.to_safe_dict(),
         "access_token": create_access_token(user_id),
         "refresh_token": create_refresh_token(user_id),
     }
