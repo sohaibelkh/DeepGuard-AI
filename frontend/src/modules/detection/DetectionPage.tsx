@@ -21,6 +21,8 @@ interface PredictResponse {
   id: number;
   prediction: string;
   confidence: number;
+  reliability_score?: number;
+  is_reliable?: boolean;
   class_probabilities: Record<string, number>;
   model_used: string;
   processing_time_ms: number;
@@ -58,7 +60,7 @@ function parseECGFile(content: string): { index: number; value: number }[] {
 const CLASS_COLORS: Record<string, string> = {
   'Normal': '#22c55e',
   'Arrhythmia': '#f97316',
-  'Atrial Fibrillation': '#38bdf8',
+  'Atrial Fibrillation': '#a5c422',
   'Myocardial Infarction': '#ef4444',
   'Tachycardia': '#a855f7',
   'Bradycardia': '#eab308',
@@ -172,17 +174,17 @@ export const DetectionPage: React.FC = () => {
   const previewChart = useMemo(() => {
     if (signalData.length === 0) return null;
     return (
-      <div className="h-48 w-full rounded-lg border border-slate-800 bg-slate-950/60">
+      <div className="h-48 w-full rounded-xl border border-[#e5e5e5] bg-white shadow-sm overflow-hidden p-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={signalData} margin={{ left: -20, right: 10, top: 5, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-            <XAxis dataKey="index" stroke="#64748b" fontSize={11} />
-            <YAxis stroke="#64748b" fontSize={11} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+            <XAxis dataKey="index" stroke="#999" fontSize={11} />
+            <YAxis stroke="#999" fontSize={11} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#020617', borderColor: '#1f2937', borderRadius: 8 }}
-              labelStyle={{ fontSize: 11, color: '#e5e7eb' }}
+              contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5', borderRadius: 8 }}
+              labelStyle={{ fontSize: 11, color: '#333' }}
             />
-            <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={1.5} dot={false} />
+            <Line type="monotone" dataKey="value" stroke="#a5c422" strokeWidth={1.5} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -193,37 +195,34 @@ export const DetectionPage: React.FC = () => {
     <div className="space-y-6">
       <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <Shield className="h-4 w-4 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0f7d4] ring-1 ring-[#a5c422]/20">
+            <Activity className="h-5 w-5 text-[#a5c422]" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-base font-semibold tracking-tight">ECG Diagnosis</h1>
-            <p className="text-xs text-slate-400">
+            <h1 className="text-base font-semibold tracking-tight text-[#333]">ECG Diagnosis</h1>
+            <p className="text-xs text-[#999]">
               Upload ECG data, select a model, and run AI-powered cardiac diagnosis.
             </p>
           </div>
-        </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-          <Activity className="h-4 w-4 text-slate-400" />
         </div>
       </header>
 
       <main className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         {/* Left column: upload + model selector */}
         <section className="space-y-4">
-          <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-5 shadow-subtle space-y-4">
+          <div className="card p-5 space-y-4">
             <UploadArea disabled={submitting} file={file} error={error} onFileSelected={handleFileSelected} />
 
             {/* Model selector */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+              <label className="text-[11px] font-medium uppercase tracking-wide text-[#999]">
                 Model
               </label>
               <div className="relative">
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="h-9 w-full appearance-none rounded-md border border-slate-700 bg-slate-950 pl-3 pr-8 text-xs text-slate-100 shadow-sm outline-none transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="dg-input pr-10"
                 >
                   {models.length > 0
                     ? models.map((m) => (
@@ -242,24 +241,24 @@ export const DetectionPage: React.FC = () => {
                       </>
                     )}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#999]" />
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-1 text-xs text-slate-500">
+            <div className="flex items-center justify-between gap-3 pt-1 text-xs text-[#999]">
               <p className="flex items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 text-slate-500" />
+                <Shield className="h-3.5 w-3.5 text-[#999]" />
                 <span>Results stored in your history with full explainability.</span>
               </p>
               <button
                 type="button"
                 disabled={!file || submitting}
                 onClick={handleSubmit}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-500 px-4 py-2 text-xs font-medium text-slate-950 shadow-sm transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#a5c422] px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#8aaa10] disabled:cursor-not-allowed disabled:bg-[#ddd]"
               >
                 {submitting ? (
                   <>
-                    <span className="h-3 w-3 animate-spin rounded-full border border-slate-900 border-t-slate-50" />
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                     <span>Analyzing…</span>
                   </>
                 ) : (
@@ -271,12 +270,12 @@ export const DetectionPage: React.FC = () => {
 
           {/* Signal preview */}
           <div className="space-y-2">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[#999]">
               Signal Preview
             </p>
             {previewChart}
             {!file && (
-              <div className="flex h-32 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-xs text-slate-500">
+              <div className="flex h-32 items-center justify-center rounded-xl border border-[#e5e5e5] bg-white p-4 text-xs text-[#999]">
                 <p>Upload an ECG file to see the signal preview.</p>
               </div>
             )}
@@ -286,7 +285,7 @@ export const DetectionPage: React.FC = () => {
         {/* Right column: results */}
         <section className="space-y-4">
           {!result && !submitting && (
-            <div className="flex h-48 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-xs text-slate-500">
+            <div className="flex h-48 items-center justify-center rounded-xl border border-[#e5e5e5] bg-white p-4 text-xs text-[#999]">
               <p>Results will appear here after diagnosis.</p>
             </div>
           )}
@@ -294,47 +293,72 @@ export const DetectionPage: React.FC = () => {
           {result && (
             <>
               {/* Prediction card */}
-              <div className="card space-y-3 p-4">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-                  Diagnosis Result
-                </p>
+              <div className="card p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-[#999]">
+                    Diagnosis Result
+                  </p>
+                  {result.is_reliable === false && (
+                    <div className="flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-bold text-red-500 ring-1 ring-red-200">
+                      <AlertTriangle className="h-2.5 w-2.5" />
+                      LOW RELIABILITY
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-lg font-semibold" style={{ color: CLASS_COLORS[result.prediction] || '#e2e8f0' }}>
-                      {result.prediction}
-                    </p>
-                    <p className="text-xs text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xl font-bold" style={{ color: CLASS_COLORS[result.prediction] || '#333' }}>
+                        {result.prediction}
+                      </p>
+                    </div>
+                    <p className="text-xs text-[#999]">
                       Model: {result.model_used} · {result.processing_time_ms.toFixed(0)}ms
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-semibold text-slate-50">
-                      {Math.round(result.confidence * 100)}%
-                    </p>
-                    <p className="text-[11px] text-slate-500">Confidence</p>
+                  <div className="flex gap-8 text-right">
+                    <div className="space-y-0.5">
+                      <p className="text-2xl font-bold text-[#333]">
+                        {Math.round(result.confidence * 100)}%
+                      </p>
+                      <p className="text-[11px] text-[#999]">Confidence</p>
+                    </div>
+                    {result.reliability_score !== undefined && (
+                      <div className="space-y-0.5">
+                        <p className={`text-2xl font-bold ${result.is_reliable ? 'text-emerald-500' : 'text-amber-500'}`}>
+                          {Math.round(result.reliability_score * 100)}%
+                        </p>
+                        <p className="text-[11px] text-[#999]">Reliability</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+                {result.is_reliable === false && (
+                  <p className="pt-1 text-[10px] italic text-red-400">
+                    * Low clinical reliability detected. The signal may be too noisy or the pattern is highly uncertain. Manual cardiologist review is recommended.
+                  </p>
+                )}
               </div>
 
               {/* Per-class confidence bars */}
               {classProbs.length > 0 && (
-                <div className="card space-y-3 p-4">
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                <div className="card p-5 space-y-4">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-[#999]">
                     Class Probabilities
                   </p>
                   <div className="h-44">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={classProbs} layout="vertical" margin={{ left: 90, right: 10, top: 5, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                        <XAxis type="number" stroke="#64748b" fontSize={10} domain={[0, 100]} unit="%" />
-                        <YAxis type="category" dataKey="label" stroke="#64748b" fontSize={10} width={85} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                        <XAxis type="number" stroke="#999" fontSize={10} domain={[0, 100]} unit="%" />
+                        <YAxis type="category" dataKey="label" stroke="#555" fontSize={10} width={85} />
                         <Tooltip
-                          contentStyle={{ backgroundColor: '#020617', borderColor: '#1f2937', borderRadius: 8 }}
+                          contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5', borderRadius: 8 }}
                           formatter={(v: number) => [`${v.toFixed(1)}%`, 'Probability']}
                         />
                         <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                           {classProbs.map((entry) => (
-                            <Cell key={entry.label} fill={CLASS_COLORS[entry.label] || '#64748b'} />
+                            <Cell key={entry.label} fill={CLASS_COLORS[entry.label] || '#999'} />
                           ))}
                         </Bar>
                       </BarChart>

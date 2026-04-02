@@ -63,7 +63,7 @@ export const ECGStreamPage: React.FC = () => {
     };
 
     wsRef.current = ws;
-  }, []);
+  }, [status]);
 
   const disconnect = useCallback(() => {
     wsRef.current?.close();
@@ -78,10 +78,10 @@ export const ECGStreamPage: React.FC = () => {
   }, []);
 
   const statusColors: Record<ConnStatus, string> = {
-    disconnected: 'text-slate-500',
-    connecting: 'text-amber-400',
-    connected: 'text-emerald-400',
-    done: 'text-sky-400',
+    disconnected: 'text-[#999]',
+    connecting: 'text-amber-500',
+    connected: 'text-emerald-500',
+    done: 'text-[#a5c422]',
   };
 
   const statusLabels: Record<ConnStatus, string> = {
@@ -93,40 +93,40 @@ export const ECGStreamPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <Radio className="h-4 w-4 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0f7d4] ring-1 ring-[#a5c422]/20">
+            <Radio className="h-5 w-5 text-[#a5c422]" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold tracking-tight text-slate-50">
+            <h1 className="text-sm font-bold tracking-tight text-[#333]">
               Live ECG Monitor
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#999]">
               Simulated real-time ECG signal streaming via WebSocket.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center gap-1.5 text-xs font-medium ${statusColors[status]}`}>
+        <div className="flex items-center gap-4 bg-white border border-[#e5e5e5] px-4 py-2 rounded-xl shadow-sm">
+          <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${statusColors[status]}`}>
             {status === 'connected' ? (
-              <Wifi className="h-3.5 w-3.5" />
+              <Wifi className="h-4 w-4" />
             ) : (
-              <WifiOff className="h-3.5 w-3.5" />
+              <WifiOff className="h-4 w-4" />
             )}
             <span>{statusLabels[status]}</span>
           </div>
           {status === 'connected' ? (
             <button
               onClick={disconnect}
-              className="rounded-lg border border-red-800 bg-red-950/50 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-900/60"
+              className="rounded-lg border border-red-100 bg-red-50 px-4 py-1.5 text-xs font-bold text-red-500 transition hover:bg-red-100 shadow-sm"
             >
               Stop
             </button>
           ) : (
             <button
               onClick={connect}
-              className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-medium text-slate-950 shadow-sm transition hover:bg-sky-400"
+              className="rounded-lg bg-[#a5c422] px-4 py-1.5 text-xs font-bold text-white shadow-md transition hover:bg-[#8aaa10]"
             >
               Start Stream
             </button>
@@ -136,30 +136,30 @@ export const ECGStreamPage: React.FC = () => {
 
       {/* Stats row */}
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="card space-y-2 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">Heart Rate</p>
-          <div className="flex items-center gap-2">
-            <Heart className={`h-5 w-5 ${status === 'connected' ? 'animate-pulse text-red-400' : 'text-slate-500'}`} />
-            <p className="metric-value">
+          <div className="flex items-center gap-3">
+            <Heart className={`h-6 w-6 ${status === 'connected' ? 'animate-pulse text-red-500' : 'text-[#999]'}`} />
+            <p className="text-3xl font-bold text-[#333]">
               {heartRate > 0 ? `${Math.round(heartRate)}` : '—'}
             </p>
-            <span className="text-xs text-slate-400">BPM</span>
+            <span className="text-xs font-bold text-[#999] bg-[#f9f9f9] px-2 py-0.5 rounded-full">BPM</span>
           </div>
         </div>
-        <div className="card space-y-2 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">Samples Received</p>
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-sky-400" />
-            <p className="metric-value">{data.length > 0 ? data[data.length - 1].index : 0}</p>
+          <div className="flex items-center gap-3">
+            <Activity className="h-6 w-6 text-[#a5c422]" />
+            <p className="text-3xl font-bold text-[#333]">{data.length > 0 ? data[data.length - 1].index : 0}</p>
           </div>
         </div>
-        <div className="card space-y-2 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">Stream Progress</p>
           <div className="space-y-2">
-            <p className="metric-value">{progress.toFixed(1)}%</p>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+            <p className="text-3xl font-bold text-[#333]">{progress.toFixed(1)}%</p>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[#f0f0f0]">
               <div
-                className="h-full rounded-full bg-sky-500 transition-all duration-300"
+                className="h-full rounded-full bg-[#a5c422] transition-all duration-300 shadow-sm"
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
@@ -168,35 +168,35 @@ export const ECGStreamPage: React.FC = () => {
       </section>
 
       {/* Live ECG Chart */}
-      <section className="card space-y-3 p-4">
+      <section className="card p-5 space-y-4">
         <header className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-sky-400" />
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          <Activity className="h-4 w-4 text-[#a5c422]" />
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
             ECG Signal
           </p>
           {status === 'connected' && (
-            <span className="ml-auto flex items-center gap-1 text-[11px] text-emerald-400">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-              LIVE
+            <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full ring-1 ring-emerald-200">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+              LIVE FEED
             </span>
           )}
         </header>
-        <div className="h-72 w-full">
+        <div className="h-80 w-full bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
           {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center rounded-lg border border-slate-800 bg-slate-950/40 text-xs text-slate-500">
+            <div className="flex h-full items-center justify-center text-sm font-medium text-[#999] italic">
               <p>Press "Start Stream" to begin real-time ECG visualization.</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={{ left: -20, right: 10, top: 5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="index" stroke="#64748b" fontSize={10} tickCount={6} />
-                <YAxis stroke="#64748b" fontSize={10} domain={['auto', 'auto']} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                <XAxis dataKey="index" stroke="#999" fontSize={10} tickCount={6} />
+                <YAxis stroke="#999" fontSize={10} domain={['auto', 'auto']} />
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#22d3ee"
-                  strokeWidth={1.5}
+                  stroke="#a5c422"
+                  strokeWidth={2}
                   dot={false}
                   isAnimationActive={false}
                 />
@@ -206,9 +206,9 @@ export const ECGStreamPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="card p-4 text-xs text-slate-400">
+      <section className="card p-5 text-xs text-[#777] leading-relaxed bg-white/50 border-dashed border-[#e5e5e5]">
         <p>
-          <strong className="text-slate-300">How it works:</strong> The backend splits a stored
+          <strong className="text-[#333]">How it works:</strong> The backend splits a stored
           ECG recording into small chunks and streams them via WebSocket at ~100ms intervals,
           simulating a real-time ECG monitor feed from a physical sensor. The chart displays a
           sliding window of the latest {MAX_VISIBLE} data points.

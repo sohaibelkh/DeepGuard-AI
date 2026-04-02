@@ -83,19 +83,19 @@ export const DashboardHome: React.FC = () => {
           <p className="metric-value">
             {totals ? totals.total_analyses.toLocaleString() : '—'}
           </p>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[#999]">
             All ECG files evaluated by the model.
           </p>
         </div>
         <div className="card space-y-3 p-4">
           <p className="metric-label">Last diagnosis</p>
           <div className="flex items-center gap-2">
-            <Heart className="h-4 w-4 text-slate-400" />
+            <Heart className="h-4 w-4 text-[#a5c422]" />
             <p className="metric-value">
               {totals?.last_diagnosis ?? '—'}
             </p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[#999]">
             {totals?.last_diagnosis_at
               ? formatDate(totals.last_diagnosis_at)
               : 'No analyses yet'}
@@ -104,22 +104,22 @@ export const DashboardHome: React.FC = () => {
         <div className="card space-y-3 p-4">
           <p className="metric-label">Model accuracy</p>
           <div className="flex items-center gap-2">
-            <Radar className="h-4 w-4 text-slate-400" />
+            <Radar className="h-4 w-4 text-[#a5c422]" />
             <p className="metric-value">{accuracyPct}%</p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[#999]">
             Current reported model performance.
           </p>
         </div>
         <div className="card space-y-3 p-4">
           <p className="metric-label">Most frequent condition</p>
           <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-slate-400" />
+            <FileText className="h-4 w-4 text-[#a5c422]" />
             <p className="metric-value">
               {totals?.most_frequent_condition ?? '—'}
             </p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[#999]">
             Most detected across your analyses.
           </p>
         </div>
@@ -129,12 +129,12 @@ export const DashboardHome: React.FC = () => {
         <div className="card space-y-4 p-4">
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-sky-400" />
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              <Activity className="h-4 w-4 text-[#a5c422]" />
+              <p className="text-xs font-medium uppercase tracking-wide text-[#555]">
                 Weekly analysis trend
               </p>
             </div>
-            <p className="text-[11px] text-slate-500">Last 7 days</p>
+            <p className="text-[11px] text-[#999]">Last 7 days</p>
           </header>
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
@@ -142,21 +142,21 @@ export const DashboardHome: React.FC = () => {
                 data={(summary?.trend ?? []).map((d) => ({ ...d, analyses: d.analyses }))}
                 margin={{ left: -20, right: 10, top: 5, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="label" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                <XAxis dataKey="label" stroke="#999" fontSize={11} />
+                <YAxis stroke="#999" fontSize={11} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#020617',
-                    borderColor: '#1f2937',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e5e5e5',
                     borderRadius: 8
                   }}
-                  labelStyle={{ fontSize: 11, color: '#e5e7eb' }}
+                  labelStyle={{ fontSize: 11, color: '#333' }}
                 />
                 <Line
                   type="monotone"
                   dataKey="analyses"
-                  stroke="#38bdf8"
+                  stroke="#a5c422"
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 4 }}
@@ -170,8 +170,8 @@ export const DashboardHome: React.FC = () => {
           <div className="card space-y-3 p-4">
             <header className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <LineChartIcon className="h-4 w-4 text-sky-400" />
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                <LineChartIcon className="h-4 w-4 text-[#a5c422]" />
+                <p className="text-xs font-medium uppercase tracking-wide text-[#555]">
                   By condition
                 </p>
               </div>
@@ -188,7 +188,7 @@ export const DashboardHome: React.FC = () => {
                     paddingAngle={3}
                   >
                     {(summary?.by_condition ?? []).map((entry, i) => {
-                      const colors = ['#22c55e', '#f97316', '#38bdf8', '#a855f7', '#eab308', '#ef4444'];
+                      const colors = ['#22c55e', '#f97316', '#a5c422', '#a855f7', '#eab308', '#ef4444'];
                       return (
                         <Cell key={entry.label} fill={colors[i % colors.length]} />
                       );
@@ -196,11 +196,11 @@ export const DashboardHome: React.FC = () => {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#020617',
-                      borderColor: '#1f2937',
+                      backgroundColor: '#ffffff',
+                      borderColor: '#e5e5e5',
                       borderRadius: 8
                     }}
-                    labelStyle={{ fontSize: 11, color: '#e5e7eb' }}
+                    labelStyle={{ fontSize: 11, color: '#333' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -210,14 +210,14 @@ export const DashboardHome: React.FC = () => {
           <div className="card space-y-3 p-4">
             <header className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-sky-400" />
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                <BarChart3 className="h-4 w-4 text-[#a5c422]" />
+                <p className="text-xs font-medium uppercase tracking-wide text-[#555]">
                   Average confidence
                 </p>
               </div>
             </header>
             <p className="metric-value">{avgConfidencePct}%</p>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-[#999]">
               Mean model confidence across your analyses.
             </p>
           </div>
@@ -226,56 +226,56 @@ export const DashboardHome: React.FC = () => {
 
       <section className="card space-y-3 p-4">
         <header className="flex items-center justify-between">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-[#555]">
             Recent activity
           </p>
         </header>
-        <div className="overflow-hidden rounded-lg border border-slate-800">
-          <table className="min-w-full divide-y divide-slate-800 text-xs">
-            <thead className="bg-slate-950/80">
+        <div className="overflow-hidden rounded-lg border border-[#e5e5e5]">
+          <table className="min-w-full divide-y divide-[#e5e5e5] text-xs">
+            <thead className="bg-[#f9f9f9]">
               <tr>
-                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-[#999]">
                   Date
                 </th>
-                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-[#999]">
                   ECG file
                 </th>
-                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-[#999]">
                   Prediction
                 </th>
-                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-[#999]">
                   Confidence
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 bg-slate-950/60">
+            <tbody className="divide-y divide-[#e5e5e5] bg-white">
               {loading && (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={4} className="px-3 py-6 text-center text-[#999]">
                     Loading…
                   </td>
                 </tr>
               )}
               {!loading && (!summary?.recent || summary.recent.length === 0) && (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={4} className="px-3 py-6 text-center text-[#999]">
                     No recent analyses.
                   </td>
                 </tr>
               )}
               {!loading &&
                 summary?.recent?.map((row) => (
-                  <tr key={row.id} className="transition-colors hover:bg-slate-900/80">
-                    <td className="px-3 py-2 text-[11px] text-slate-300">
+                  <tr key={row.id} className="transition-colors hover:bg-[#f5f5f5]">
+                    <td className="px-3 py-2 text-[11px] text-[#555]">
                       {formatDate(row.created_at)}
                     </td>
-                    <td className="px-3 py-2 text-[11px] text-slate-100">{row.file_name}</td>
+                    <td className="px-3 py-2 text-[11px] text-[#333] font-medium">{row.file_name}</td>
                     <td className="px-3 py-2">
-                      <span className="inline-flex rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-200">
+                      <span className="inline-flex rounded-full bg-[#f0f7d4] px-2 py-0.5 text-[10px] font-semibold text-[#a5c422] ring-1 ring-[#a5c422]/20">
                         {row.prediction}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-[11px] text-slate-300">
+                    <td className="px-3 py-2 text-[11px] text-[#555]">
                       {Math.round(row.confidence * 100)}%
                     </td>
                   </tr>

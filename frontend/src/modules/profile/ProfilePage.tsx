@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AlertCircle, CheckCircle2, Mail, Shield, User, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Mail, Shield, User, Lock, Save } from 'lucide-react';
 import { apiClient } from '../../lib/apiClient';
 import { useAuth } from '../auth/AuthContext';
 import { AuthUser } from '../auth/types';
@@ -98,72 +98,73 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <Shield className="h-4 w-4 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0f7d4] ring-1 ring-[#a5c422]/20">
+            <User className="h-5 w-5 text-[#a5c422]" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold tracking-tight text-slate-50">
-              Profile
+            <h1 className="text-sm font-bold tracking-tight text-[#333]">
+              Account Profile
             </h1>
-            <p className="text-xs text-slate-400">
-              Manage your account and password.
+            <p className="text-xs text-[#999]">
+              Manage your personal information and account security.
             </p>
           </div>
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <form onSubmit={handleProfileSubmit} className="card space-y-4 p-4">
+      <section className="grid gap-6 md:grid-cols-2">
+        <form onSubmit={handleProfileSubmit} className="card p-6 space-y-5">
           <div className="space-y-1">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              Profile details
-            </p>
-            <p className="text-xs text-slate-500">
-              Your name and email for this platform.
+             <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-[#a5c422]" />
+              <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+                General Information
+              </p>
+            </div>
+            <p className="text-[11px] text-[#999]">
+              Update your name and primary email address.
             </p>
           </div>
 
           {profileError && (
-            <div className="flex items-start gap-2 rounded-lg border border-red-900/70 bg-red-950/40 px-3 py-2 text-[11px] text-red-100">
-              <AlertCircle className="h-3.5 w-3.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[11px] font-medium text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <p>{profileError}</p>
             </div>
           )}
           {profileSuccess && (
-            <div className="flex items-start gap-2 rounded-lg border border-emerald-900/70 bg-emerald-950/40 px-3 py-2 text-[11px] text-emerald-100">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-medium text-emerald-600">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
               <p>{profileSuccess}</p>
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-slate-300">Full name</label>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-950/70 px-2">
-              <User className="h-3.5 w-3.5 text-slate-500" />
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-[#777]">Full name</label>
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#e5e5e5] bg-[#fcfcfc] px-3.5 focus-within:border-[#a5c422] focus-within:ring-1 focus-within:ring-[#a5c422]/30 transition shadow-inner">
+              <User className="h-4 w-4 text-[#999]" />
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="h-8 w-full bg-transparent text-xs text-slate-100 outline-none"
-                placeholder="Your full name"
-                autoComplete="name"
+                className="h-10 w-full bg-transparent text-xs font-semibold text-[#333] outline-none"
+                placeholder="Enter your full name"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-slate-300">Email</label>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-950/70 px-2">
-              <Mail className="h-3.5 w-3.5 text-slate-500" />
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-[#777]">Email address</label>
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#e5e5e5] bg-[#fcfcfc] px-3.5 focus-within:border-[#a5c422] focus-within:ring-1 focus-within:ring-[#a5c422]/30 transition shadow-inner">
+              <Mail className="h-4 w-4 text-[#999]" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-8 w-full bg-transparent text-xs text-slate-100 outline-none"
+                className="h-10 w-full bg-transparent text-xs font-semibold text-[#333] outline-none"
                 placeholder="you@example.com"
-                autoComplete="email"
               />
             </div>
           </div>
@@ -171,77 +172,81 @@ export const ProfilePage: React.FC = () => {
           <button
             type="submit"
             disabled={profileSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-medium text-slate-950 shadow-sm transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#a5c422] px-5 py-2 text-xs font-bold text-white shadow-md transition hover:bg-[#8aaa10] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {profileSubmitting ? 'Saving changes…' : 'Save changes'}
+            {profileSubmitting ? (
+               <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            ) : (
+               <Save className="h-3.5 w-3.5" />
+            )}
+            <span>{profileSubmitting ? 'Saving changes…' : 'Save changes'}</span>
           </button>
         </form>
 
-        <form onSubmit={handlePasswordSubmit} className="card space-y-4 p-4">
+        <form onSubmit={handlePasswordSubmit} className="card p-6 space-y-5">
           <div className="space-y-1">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              Password
-            </p>
-            <p className="text-xs text-slate-500">
-              Update your login password.
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-[#a5c422]" />
+               <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+                Security Settings
+              </p>
+            </div>
+            <p className="text-[11px] text-[#999]">
+              Change your password and secure your account.
             </p>
           </div>
 
           {passwordError && (
-            <div className="flex items-start gap-2 rounded-lg border border-red-900/70 bg-red-950/40 px-3 py-2 text-[11px] text-red-100">
-              <AlertCircle className="h-3.5 w-3.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[11px] font-medium text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <p>{passwordError}</p>
             </div>
           )}
           {passwordSuccess && (
-            <div className="flex items-start gap-2 rounded-lg border border-emerald-900/70 bg-emerald-950/40 px-3 py-2 text-[11px] text-emerald-100">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-medium text-emerald-600">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
               <p>{passwordSuccess}</p>
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-slate-300">
-              Current password
-            </label>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-950/70 px-2">
-              <Lock className="h-3.5 w-3.5 text-slate-500" />
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-[#777]">Current password</label>
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#e5e5e5] bg-[#fcfcfc] px-3.5 focus-within:border-[#a5c422] focus-within:ring-1 focus-within:ring-[#a5c422]/30 transition shadow-inner">
+              <Lock className="h-4 w-4 text-[#999]" />
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="h-8 w-full bg-transparent text-xs text-slate-100 outline-none"
-                autoComplete="current-password"
+                className="h-10 w-full bg-transparent text-xs font-semibold text-[#333] outline-none"
+                placeholder="••••••••"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-slate-300">New password</label>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-950/70 px-2">
-              <Lock className="h-3.5 w-3.5 text-slate-500" />
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-[#777]">New password</label>
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#e5e5e5] bg-[#fcfcfc] px-3.5 focus-within:border-[#a5c422] focus-within:ring-1 focus-within:ring-[#a5c422]/30 transition shadow-inner">
+              <Lock className="h-4 w-4 text-[#999]" />
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="h-8 w-full bg-transparent text-xs text-slate-100 outline-none"
-                autoComplete="new-password"
+                className="h-10 w-full bg-transparent text-xs font-semibold text-[#333] outline-none"
+                placeholder="New password (8+ chars)"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-slate-300">
-              Confirm new password
-            </label>
-            <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-950/70 px-2">
-              <Lock className="h-3.5 w-3.5 text-slate-500" />
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-[#777]">Confirm new password</label>
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#e5e5e5] bg-[#fcfcfc] px-3.5 focus-within:border-[#a5c422] focus-within:ring-1 focus-within:ring-[#a5c422]/30 transition shadow-inner">
+              <Lock className="h-4 w-4 text-[#999]" />
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-8 w-full bg-transparent text-xs text-slate-100 outline-none"
-                autoComplete="new-password"
+                className="h-10 w-full bg-transparent text-xs font-semibold text-[#333] outline-none"
+                placeholder="Confirm password"
               />
             </div>
           </div>
@@ -249,13 +254,17 @@ export const ProfilePage: React.FC = () => {
           <button
             type="submit"
             disabled={passwordSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-sm transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-800/70"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-white border border-[#e5e5e5] px-5 py-2 text-xs font-bold text-[#555] shadow-sm transition hover:bg-[#f9f9f9] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {passwordSubmitting ? 'Updating password…' : 'Update password'}
+            {passwordSubmitting ? (
+               <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#eee] border-t-[#777]" />
+            ) : (
+               <Lock className="h-3.5 w-3.5" />
+            )}
+            <span>{passwordSubmitting ? 'Updating…' : 'Update password'}</span>
           </button>
         </form>
       </section>
     </div>
   );
 };
-

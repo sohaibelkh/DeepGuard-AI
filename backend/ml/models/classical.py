@@ -76,9 +76,9 @@ class ClassicalModel:
         self.pipeline.fit(X, y)
         self.is_fitted = True
 
-    def predict(self, X: np.ndarray) -> tuple[str, float, dict[str, float]]:
+    def predict(self, X: np.ndarray) -> tuple[str, float, dict[str, float], float]:
         """
-        Predict a single sample. Returns (label, confidence, class_probabilities).
+        Predict a single sample. Returns (label, confidence, class_probabilities, reliability).
         X shape: (1, n_features) or (n_features,)
         """
         if X.ndim == 1:
@@ -91,7 +91,8 @@ class ClassicalModel:
         proba = self.pipeline.predict_proba(X)[0]
         idx = int(np.argmax(proba))
         class_probs = {c: float(p) for c, p in zip(self.classes, proba)}
-        return self.classes[idx], float(proba[idx]), class_probs
+        # Classical models use a static reliability for now
+        return self.classes[idx], float(proba[idx]), class_probs, 0.90
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """Return probability matrix for multiple samples."""
@@ -121,7 +122,7 @@ class ClassicalModel:
         except FileNotFoundError:
             return False
 
-    def _simulate_prediction(self) -> tuple[str, float, dict[str, float]]:
+    def _simulate_prediction(self) -> tuple[str, float, dict[str, float], float]:
         """Generate a realistic simulated prediction when model is not trained."""
         rng = np.random.default_rng()
         # Generate Dirichlet-distributed probabilities for realistic output
@@ -132,4 +133,4 @@ class ClassicalModel:
         proba /= proba.sum()
         idx = int(np.argmax(proba))
         class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, proba)}
-        return self.classes[idx], float(proba[idx]), class_probs
+        return self.classes[idx], float(proba[idx]), class_probs, 0.95

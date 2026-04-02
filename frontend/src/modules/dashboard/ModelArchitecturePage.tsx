@@ -15,34 +15,37 @@ const STEPS = [
 export const ModelArchitecturePage: React.FC = () => {
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <Cpu className="h-4 w-4 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0f7d4] ring-1 ring-[#a5c422]/20">
+            <Cpu className="h-5 w-5 text-[#a5c422]" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold tracking-tight text-slate-50">
-              Model architecture
+            <h1 className="text-sm font-bold tracking-tight text-[#333]">
+              Model Architecture
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#999]">
               Deep learning pipeline for ECG time-series classification.
             </p>
           </div>
         </div>
       </header>
 
-      <section className="card space-y-4 p-4">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-          Pipeline
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
+      <section className="card p-6 space-y-5">
+        <header className="flex items-center gap-2">
+           <Layers className="h-4 w-4 text-[#a5c422]" />
+           <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+            Diagnostic Pipeline
+          </p>
+        </header>
+        <div className="flex flex-wrap items-center gap-3">
           {STEPS.map((step, i) => (
             <React.Fragment key={step}>
-              <div className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-medium text-slate-200">
+              <div className="rounded-xl border border-[#e5e5e5] bg-[#fdfdfd] px-4 py-2.5 text-xs font-bold text-[#333] shadow-sm ring-1 ring-inset ring-[#eee]">
                 {step}
               </div>
               {i < STEPS.length - 1 && (
-                <ArrowRight className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                <ArrowRight className="h-4 w-4 flex-shrink-0 text-[#ccc]" />
               )}
             </React.Fragment>
           ))}
@@ -50,41 +53,47 @@ export const ModelArchitecturePage: React.FC = () => {
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="card space-y-3 p-4">
-          <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-sky-400" />
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Why CNN for feature extraction
+        <div className="card p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[#f0f7d4]">
+               <Layers className="h-4 w-4 text-[#a5c422]" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+              CNN Feature Extraction
             </p>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-[#777] leading-relaxed">
             1D convolutions capture local patterns in the ECG signal (e.g. QRS complex,
             P and T waves) without hand-crafted features. Filters learn discriminative
             motifs across the time axis, acting as a feature extractor before the
             sequential layer.
           </p>
         </div>
-        <div className="card space-y-3 p-4">
-          <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-sky-400" />
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Why LSTM for time dependency
+        <div className="card p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[#f0f7d4]">
+               <Layers className="h-4 w-4 text-[#a5c422]" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+              LSTM Temporal Dependency
             </p>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-[#777] leading-relaxed">
             ECG is a time-series; the order of events matters. LSTM layers model long-range
             dependencies and temporal context, so the model can use rhythm and sequence
             information (e.g. RR intervals, recurring patterns) for classification.
           </p>
         </div>
-        <div className="card space-y-3 p-4">
-          <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-sky-400" />
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Why softmax for classification
+        <div className="card p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[#f0f7d4]">
+               <Layers className="h-4 w-4 text-[#a5c422]" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+              Softmax Probability
             </p>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-[#777] leading-relaxed">
             The task is multi-class (e.g. Normal, Arrhythmia, Atrial Fibrillation, etc.).
             A dense layer projects to one logit per class; softmax converts these to
             probabilities that sum to 1, giving a clear confidence score per class.

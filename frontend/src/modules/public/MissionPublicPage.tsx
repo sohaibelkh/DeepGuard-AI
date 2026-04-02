@@ -8,7 +8,7 @@ export const MissionPublicPage: React.FC = () => {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/login" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <Shield className="h-4 w-4 text-sky-400" />
+            <Shield className="h-4 w-4 text-[#a5c422]" />
           </div>
           <div className="leading-tight">
             <p className="text-sm font-semibold tracking-tight">DeepGuard AI</p>
@@ -33,7 +33,7 @@ export const MissionPublicPage: React.FC = () => {
 
       <main className="mx-auto flex max-w-5xl flex-col gap-10 px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pt-12">
         <section className="space-y-4">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-sky-400">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#a5c422]">
             Our mission
           </p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -50,7 +50,7 @@ export const MissionPublicPage: React.FC = () => {
         <section className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-sky-400" />
+              <Target className="h-4 w-4 text-[#a5c422]" />
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 Precision over volume
               </p>
@@ -62,7 +62,7 @@ export const MissionPublicPage: React.FC = () => {
           </div>
           <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
             <div className="flex items-center gap-2">
-              <Globe2 className="h-4 w-4 text-sky-400" />
+              <Globe2 className="h-4 w-4 text-[#a5c422]" />
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 Human‑centered workflows
               </p>
@@ -74,7 +74,7 @@ export const MissionPublicPage: React.FC = () => {
           </div>
           <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
             <div className="flex items-center gap-2">
-              <HeartHandshake className="h-4 w-4 text-sky-400" />
+              <HeartHandshake className="h-4 w-4 text-[#a5c422]" />
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 Partnership with defenders
               </p>

@@ -62,12 +62,27 @@ def compute_metrics(
         zero_division=0,
     )
     per_class = []
-    for cls_name in classes:
+    for i, cls_name in enumerate(classes):
+        # Specificity calculation (TN / (TN + FP))
+        # TN = Sum of all entries except row i and column i
+        # FP = Sum of column i except entry (i, i)
+        # FN = Sum of row i except entry (i, i)
+        # TP = cm[i, i]
+        tp = cm[i, i]
+        fp = cm[:, i].sum() - tp
+        fn = cm[i, :].sum() - tp
+        tn = cm.sum() - (tp + fp + fn)
+        
+        specificity = tn / (tn + fp + 1e-8)
+        sensitivity = tp / (tp + fn + 1e-8) # Same as recall
+
         if cls_name in report:
             per_class.append({
                 "class": cls_name,
                 "precision": round(report[cls_name]["precision"], 4),
-                "recall": round(report[cls_name]["recall"], 4),
+                "recall": round(report[cls_name]["recall"], 4), # Sensitivity
+                "specificity": round(float(specificity), 4),
+                "sensitivity": round(float(sensitivity), 4),
                 "f1_score": round(report[cls_name]["f1-score"], 4),
                 "support": int(report[cls_name]["support"]),
             })

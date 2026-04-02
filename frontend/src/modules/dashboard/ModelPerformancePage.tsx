@@ -3,6 +3,7 @@ import {
   BarChart3,
   LineChart as LineChartIcon,
   Shield,
+  ChevronDown
 } from 'lucide-react';
 import {
   Bar,
@@ -37,7 +38,7 @@ const MODEL_COLORS: Record<string, string> = {
   svm: '#f97316',
   random_forest: '#22c55e',
   knn: '#eab308',
-  cnn: '#38bdf8',
+  cnn: '#a5c422',
   lstm: '#a855f7',
   hybrid_cnn_lstm: '#06b6d4',
 };
@@ -88,121 +89,127 @@ export const ModelPerformancePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-xs text-slate-500">
-        Loading model metrics…
+      <div className="card p-12 flex flex-col items-center justify-center gap-3 text-[#999]">
+         <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#eee] border-t-[#a5c422]" />
+         <p className="text-xs font-medium">Loading model metrics…</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <LineChartIcon className="h-4 w-4 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0f7d4] ring-1 ring-[#a5c422]/20">
+            <LineChartIcon className="h-5 w-5 text-[#a5c422]" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold tracking-tight text-slate-50">
+            <h1 className="text-sm font-bold tracking-tight text-[#333]">
               Model Performance
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#999]">
               Evaluation metrics, ROC curves, confusion matrix, and model comparison.
             </p>
           </div>
         </div>
-        <select
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
-          className="h-8 appearance-none rounded-md border border-slate-700 bg-slate-950 px-3 text-xs text-slate-100 outline-none focus:border-sky-500"
-        >
-          {models.map((m) => (
-            <option key={m.model_name} value={m.model_name}>
-              {m.display_name}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            className="dg-input w-48 pr-10"
+          >
+            {models.map((m) => (
+              <option key={m.model_name} value={m.model_name}>
+                {m.display_name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#999]" />
+        </div>
       </header>
 
       {/* Metric cards */}
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="card space-y-3 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">Accuracy</p>
           <p className="metric-value">{selectedModel ? Math.round(selectedModel.accuracy * 1000) / 10 : 0}%</p>
-          <p className="text-[11px] text-slate-400">Overall correct predictions</p>
+          <p className="text-[11px] text-[#999]">Overall correct predictions</p>
         </div>
-        <div className="card space-y-3 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">Precision</p>
           <p className="metric-value">{selectedModel ? Math.round(selectedModel.precision * 1000) / 10 : 0}%</p>
-          <p className="text-[11px] text-slate-400">Positive prediction quality</p>
+          <p className="text-[11px] text-[#999]">Positive prediction quality</p>
         </div>
-        <div className="card space-y-3 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">Recall</p>
           <p className="metric-value">{selectedModel ? Math.round(selectedModel.recall * 1000) / 10 : 0}%</p>
-          <p className="text-[11px] text-slate-400">Sensitivity (critical for medical)</p>
+          <p className="text-[11px] text-[#999]">Sensitivity (critical for medical)</p>
         </div>
-        <div className="card space-y-3 p-4">
+        <div className="card p-5 space-y-3">
           <p className="metric-label">F1-Score</p>
           <p className="metric-value">{selectedModel ? Math.round(selectedModel.f1_score * 1000) / 10 : 0}%</p>
-          <p className="text-[11px] text-slate-400">Harmonic mean of P and R</p>
+          <p className="text-[11px] text-[#999]">Harmonic mean of P and R</p>
         </div>
       </section>
 
       {/* ROC + Confusion Matrix */}
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="card space-y-4 p-4">
+        <div className="card p-5 space-y-4">
           <header className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-sky-400" />
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            <Shield className="h-4 w-4 text-[#a5c422]" />
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
               ROC Curve — {selectedModel?.display_name}
             </p>
           </header>
-          <div className="h-64">
+          <div className="h-72 bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={rocData} margin={{ left: -20, right: 10, top: 5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <LineChart data={rocData} margin={{ left: -20, right: 10, top: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                 <XAxis
                   dataKey="fpr"
-                  stroke="#64748b"
+                  stroke="#999"
                   fontSize={11}
                   tickFormatter={(v) => (v * 100).toFixed(0) + '%'}
                 />
                 <YAxis
-                  stroke="#64748b"
+                  stroke="#999"
                   fontSize={11}
                   tickFormatter={(v) => (v * 100).toFixed(0) + '%'}
+                  domain={[0, 1]}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#020617', borderColor: '#1f2937', borderRadius: 8 }}
-                  formatter={(v: number) => [(v * 100).toFixed(1) + '%', '']}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5', borderRadius: 8 }}
+                  formatter={(v: number) => [(v * 100).toFixed(1) + '%', 'TPR']}
                   labelFormatter={(l) => 'FPR: ' + (Number(l) * 100).toFixed(1) + '%'}
                 />
-                <Line type="monotone" dataKey="tpr" stroke="#38bdf8" strokeWidth={2} dot={false} name="TPR" />
+                <Line type="monotone" dataKey="tpr" stroke="#a5c422" strokeWidth={3} dot={false} name="TPR" />
+                <Line type="step" dataKey="fpr" stroke="#ddd" strokeDasharray="5 5" strokeWidth={1} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="card space-y-4 p-4">
+        <div className="card p-5 space-y-4">
           <header className="flex items-center gap-2">
-            <LineChartIcon className="h-4 w-4 text-sky-400" />
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            <BarChart3 className="h-4 w-4 text-[#a5c422]" />
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
               Confusion Matrix — {selectedModel?.display_name}
             </p>
           </header>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-[11px]">
+          <div className="overflow-x-auto rounded-xl border border-[#e5e5e5]">
+            <table className="w-full border-collapse text-[10px]">
               <thead>
-                <tr>
-                  <th className="border border-slate-700 bg-slate-900/80 p-1.5 text-slate-400">Pred \ True</th>
+                <tr className="bg-[#f9f9f9]">
+                  <th className="border-b border-r border-[#e5e5e5] p-2.5 text-[#999] font-bold uppercase">Pred \ True</th>
                   {ECG_CLASSES.map((c) => (
-                    <th key={c} className="border border-slate-700 bg-slate-900/80 p-1.5 text-slate-400">{c}</th>
+                    <th key={c} className="border-b border-r border-[#e5e5e5] p-2.5 text-[#999] font-bold uppercase">{c}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white">
                 {cm.map((row, i) => (
                   <tr key={i}>
-                    <td className="border border-slate-700 bg-slate-900/60 p-1.5 font-medium text-slate-300">
+                    <td className="border-b border-r border-[#e5e5e5] bg-[#fdfdfd] p-2.5 font-bold text-[#555]">
                       {ECG_CLASSES[i]}
                     </td>
                     {row.map((cell, j) => {
@@ -210,13 +217,14 @@ export const ModelPerformancePage: React.FC = () => {
                       const bg =
                         i === j
                           ? intensity > 0.3
-                            ? 'bg-sky-900/60'
-                            : 'bg-sky-950/40'
+                            ? 'bg-[#f0f7d4]'
+                            : 'bg-[#fafdcf]'
                           : intensity > 0.1
-                            ? 'bg-red-950/40'
-                            : 'bg-slate-800/40';
+                            ? 'bg-red-50'
+                            : 'bg-white';
+                      const text = i === j ? 'text-[#a5c422] font-bold' : 'text-[#777]';
                       return (
-                        <td key={j} className={`border border-slate-700 p-1.5 text-center text-slate-200 ${bg}`}>
+                        <td key={j} className={`border-b border-r border-[#e5e5e5] p-2.5 text-center ${bg} ${text}`}>
                           {cell}
                         </td>
                       );
@@ -230,43 +238,44 @@ export const ModelPerformancePage: React.FC = () => {
       </section>
 
       {/* Model Comparison */}
-      <section className="card space-y-4 p-4">
+      <section className="card p-5 space-y-4">
         <header className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-sky-400" />
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Model Comparison
+          <BarChart3 className="h-4 w-4 text-[#a5c422]" />
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+            Model Metrics Comparison
           </p>
         </header>
-        <div className="h-64">
+        <div className="h-72 bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparisonData} margin={{ left: 0, right: 10, top: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="metric" stroke="#64748b" fontSize={11} />
-              <YAxis stroke="#64748b" fontSize={11} domain={[0, 100]} unit="%" />
+            <BarChart data={comparisonData} margin={{ left: -10, right: 10, top: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} />
+              <XAxis dataKey="metric" stroke="#999" fontSize={11} />
+              <YAxis stroke="#999" fontSize={11} domain={[0, 100]} unit="%" />
               <Tooltip
-                contentStyle={{ backgroundColor: '#020617', borderColor: '#1f2937', borderRadius: 8 }}
-                labelStyle={{ fontSize: 11, color: '#e5e7eb' }}
+                contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5', borderRadius: 8 }}
+                labelStyle={{ fontSize: 11, color: '#333' }}
               />
               {models.map((m) => (
                 <Bar
                   key={m.model_name}
                   dataKey={m.display_name}
-                  fill={MODEL_COLORS[m.model_name] || '#64748b'}
+                  fill={MODEL_COLORS[m.model_name] || '#999'}
                   radius={[4, 4, 0, 0]}
+                  barSize={selected === m.model_name ? 36 : 24}
                 />
               ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-4 pt-2">
           {models.map((m) => (
             <span
               key={m.model_name}
-              className="inline-flex items-center gap-1.5 text-[11px] text-slate-400"
+              className="inline-flex items-center gap-2 text-[11px] font-medium text-[#777] bg-white border border-[#e5e5e5] px-3 py-1 rounded-full shadow-sm"
             >
               <span
                 className="inline-block h-2 w-2 rounded-full"
-                style={{ backgroundColor: MODEL_COLORS[m.model_name] || '#64748b' }}
+                style={{ backgroundColor: MODEL_COLORS[m.model_name] || '#999' }}
               />
               {m.display_name}
             </span>

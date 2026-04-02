@@ -151,6 +151,8 @@ async def predict(
     # Update record with prediction
     record.prediction = pred_result["prediction"]
     record.confidence = pred_result["confidence"]
+    record.reliability_score = pred_result.get("reliability_score")
+    record.is_reliable = 1 if pred_result.get("is_reliable") else 0
     record.model_used = pred_result["model_used"]
     record.processing_time_ms = pred_result["processing_time_ms"]
     record.class_probabilities = json.dumps(pred_result["class_probabilities"])
@@ -161,6 +163,8 @@ async def predict(
         "id": record.id,
         "prediction": pred_result["prediction"],
         "confidence": pred_result["confidence"],
+        "reliability_score": pred_result.get("reliability_score"),
+        "is_reliable": pred_result.get("is_reliable"),
         "class_probabilities": pred_result["class_probabilities"],
         "model_used": pred_result["model_used"],
         "processing_time_ms": pred_result["processing_time_ms"],
@@ -221,6 +225,8 @@ async def analysis_compat(
     return {
         "prediction": pred_result["prediction"],
         "confidence": pred_result["confidence"],
+        "reliability_score": pred_result.get("reliability_score"),
+        "is_reliable": pred_result.get("is_reliable"),
         "id": record.id,
         "created_at": record.created_at.isoformat(),
     }

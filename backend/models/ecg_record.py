@@ -29,6 +29,8 @@ class ECGRecord(Base):
     confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     model_used: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     processing_time_ms: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    reliability_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    is_reliable: Mapped[Optional[bool]] = mapped_column(Integer, nullable=True) # SQLite uses Integer for bool
 
     # Per-class probabilities stored as JSON string: {"Normal": 0.85, ...}
     class_probabilities: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -47,6 +49,8 @@ class ECGRecord(Base):
             "signal_length": self.signal_length,
             "prediction": self.prediction,
             "confidence": self.confidence,
+            "reliability_score": self.reliability_score,
+            "is_reliable": bool(self.is_reliable) if self.is_reliable is not None else None,
             "model_used": self.model_used,
             "processing_time_ms": self.processing_time_ms,
             "class_probabilities": self.class_probabilities,

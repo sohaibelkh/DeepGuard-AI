@@ -66,7 +66,7 @@ class LSTMModel:
         self.classes = settings.ECG_CLASSES
         self.is_loaded = False
 
-    def predict(self, signal: np.ndarray) -> tuple[str, float, dict[str, float]]:
+    def predict(self, signal: np.ndarray) -> tuple[str, float, dict[str, float], float]:
         """
         Predict from a preprocessed ECG segment.
         signal shape: (segment_length,)
@@ -86,7 +86,8 @@ class LSTMModel:
 
         idx = int(np.argmax(probs))
         class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, probs)}
-        return self.classes[idx], float(probs[idx]), class_probs
+        # Default reliability for real models without MC Dropout implemented yet
+        return self.classes[idx], float(probs[idx]), class_probs, 0.85
 
     def save(self, path: Optional[str] = None) -> str:
         if path is None:
@@ -105,7 +106,7 @@ class LSTMModel:
         except FileNotFoundError:
             return False
 
-    def _simulate_prediction(self) -> tuple[str, float, dict[str, float]]:
+    def _simulate_prediction(self) -> tuple[str, float, dict[str, float], float]:
         rng = np.random.default_rng()
         proba = rng.dirichlet(np.ones(self.num_classes) * 0.4)
         dominant = rng.integers(0, self.num_classes)
@@ -113,4 +114,4 @@ class LSTMModel:
         proba /= proba.sum()
         idx = int(np.argmax(proba))
         class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, proba)}
-        return self.classes[idx], float(proba[idx]), class_probs
+        return self.classes[idx], float(proba[idx]), class_probs, 0.95

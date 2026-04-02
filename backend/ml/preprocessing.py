@@ -90,15 +90,26 @@ def preprocess_ecg(
     fs: Optional[int] = None,
 ) -> np.ndarray:
     """
-    Full preprocessing pipeline:
-      raw → bandpass filter → baseline removal → normalization.
-    Returns a clean 1-D NumPy array.
+    Full preprocessing pipeline for multi-channel signals:
+      raw → per-channel (bandpass filter → baseline removal → normalization).
+    Returns a clean NumPy array of the same shape as input (e.g., (12, N) or (N,)).
     """
+    fs = fs or settings.ECG_SAMPLE_RATE
     signal = raw_signal.astype(np.float64)
-    signal = bandpass_filter(signal, fs=fs)
-    signal = remove_baseline_wander(signal)
-    signal = normalize(signal)
-    return signal
+
+    # Handle both (leads, samples) and (samples,) shapes
+    if signal.ndim == 1:
+        signal = bandpass_filter(signal, fs=fs)
+        signal = remove_baseline_wander(signal)
+        signal = normalize(signal)
+    else:
+        # Process each lead independently
+        for i in range(signal.shape[0]):
+            signal[i] = bandpass_filter(signal[i], fs=fs)
+            signal[i] = remove_baseline_wander(signal[i])
+            signal[i] = normalize(signal[i])
+
+    return signal.astype(np.float32)
 
 
 def preprocess_and_segment(
@@ -108,6 +119,26 @@ def preprocess_and_segment(
 ) -> list[np.ndarray]:
     """
     End-to-end: preprocess then segment into fixed-length chunks.
+    For multi-lead signals, returns a list of segments with shape (leads, segment_length).
     """
+    segment_length = segment_length or settings.ECG_SEGMENT_LENGTH
     clean = preprocess_ecg(raw_signal, fs=fs)
-    return segment_signal(clean, segment_length=segment_length)
+    
+    if clean.ndim == 1:
+        return segment_signal(clean, segment_length=segment_length)
+    
+    # For multi-lead, we segment along the time axis (axis 1)
+    num_leads, total_samples = clean.shape
+    segments = []
+    for start in range(0, total_samples, segment_length):
+        end = start + segment_length
+        if end > total_samples:
+            # Pad
+            chunk = np.zeros((num_leads, segment_length), dtype=np.float32)
+            actual_chunk = clean[:, start:]
+            chunk[:, :actual_chunk.shape[1]] = actual_chunk
+        else:
+            chunk = clean[:, start:end]
+        segments.append(chunk)
+    
+    return segments

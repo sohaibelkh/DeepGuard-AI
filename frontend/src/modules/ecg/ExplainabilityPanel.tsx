@@ -1,177 +1,115 @@
 import React from 'react';
-import { BarChart3, Sparkles } from 'lucide-react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts';
+import { Info, Sparkles } from 'lucide-react';
 
-interface Feature {
-  name: string;
-  importance: number;
-  value: number;
+interface ExplainabilityPanelProps {
+  explanation: any;
+  loading: boolean;
 }
 
-interface Region {
-  start: number;
-  end: number;
-  importance: number;
-  label?: string;
-}
-
-interface Explanation {
-  method: string;
-  model_name: string;
-  features?: Feature[];
-  regions?: Region[];
-  heatmap?: number[];
-  summary: string;
-}
-
-interface Props {
-  explanation: Explanation | null;
-  loading?: boolean;
-}
-
-export const ExplainabilityPanel: React.FC<Props> = ({ explanation, loading }) => {
+export const ExplainabilityPanel: React.FC<ExplainabilityPanelProps> = ({
+  explanation,
+  loading
+}) => {
   if (loading) {
     return (
-      <div className="card space-y-3 p-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-amber-400" />
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Explainability
-          </p>
-        </div>
-        <div className="flex h-32 items-center justify-center text-xs text-slate-500">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-sky-400" />
-          <span className="ml-2">Generating explanation…</span>
-        </div>
+      <div className="card p-6 flex flex-col items-center justify-center gap-3 text-[#999]">
+         <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#eee] border-t-[#a5c422]" />
+         <p className="text-xs font-medium">Generating AI explanation…</p>
       </div>
     );
   }
 
   if (!explanation) return null;
 
-  const isFeatureBased = explanation.method === 'feature_importance';
+  // Transform SHAP/LIME style importance data for the chart
+  const importanceData = explanation.feature_importance
+    ? Object.entries(explanation.feature_importance)
+        .map(([name, value]) => ({
+          name,
+          value: Math.abs(value as number),
+          original: value as number
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8)
+    : [];
 
   return (
-    <div className="card space-y-4 p-4">
-      <header className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-amber-400" />
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-          AI Explainability — {explanation.model_name}
-        </p>
+    <div className="card p-5 space-y-4">
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[#a5c422]" />
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+            AI Decision Support (Explainability)
+          </p>
+        </div>
+        <div className="group relative">
+          <Info className="h-3.5 w-3.5 text-[#ccc] cursor-help" />
+          <div className="absolute right-0 top-6 z-10 w-48 scale-0 rounded-lg bg-[#333] p-2 text-[10px] text-white shadow-xl transition-all group-hover:scale-100">
+            SHAP (SHapley Additive exPlanations) values indicating which signal segments
+            most influenced the model's prediction.
+          </div>
+        </div>
       </header>
 
-      {/* Summary text */}
-      <p className="rounded-lg border border-slate-800 bg-slate-950/50 p-3 text-xs text-slate-300 leading-relaxed">
-        {explanation.summary}
-      </p>
-
-      {isFeatureBased && explanation.features && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-            Feature Importance
+      {importanceData.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-medium text-[#777]">
+            Top signal segments contributing to this diagnosis:
           </p>
-          <div className="h-56">
+          <div className="h-48 bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={explanation.features.slice(0, 10)}
+                data={importanceData}
                 layout="vertical"
-                margin={{ left: 80, right: 10, top: 5, bottom: 5 }}
+                margin={{ left: 50, right: 10, top: 0, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis type="number" stroke="#64748b" fontSize={10} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#eee" horizontal={false} />
+                <XAxis type="number" hide />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  stroke="#64748b"
+                  stroke="#757575"
                   fontSize={10}
-                  width={75}
+                  width={45}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#020617',
-                    borderColor: '#1f2937',
-                    borderRadius: 8,
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e5e5e5',
+                    borderRadius: 8
                   }}
-                  labelStyle={{ fontSize: 11, color: '#e5e7eb' }}
-                  formatter={(value: number) => [
-                    `${(value * 100).toFixed(1)}%`,
-                    'Importance',
-                  ]}
+                  cursor={{ fill: '#f9f9f9' }}
+                  formatter={(v: number) => [v.toFixed(4), 'Importance']}
                 />
-                <Bar dataKey="importance" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                  {importanceData.map((entry, i) => (
+                    <Cell
+                      key={entry.name}
+                      fill={entry.original > 0 ? '#a5c422' : '#f97316'}
+                      fillOpacity={1 - i * 0.08}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       )}
 
-      {!isFeatureBased && explanation.heatmap && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-            Signal Region Importance Heatmap
-          </p>
-          <div className="h-32">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={explanation.heatmap.map((v, i) => ({ i, importance: v }))}
-                margin={{ left: -20, right: 10, top: 5, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="i" stroke="#64748b" fontSize={10} />
-                <YAxis stroke="#64748b" fontSize={10} domain={[0, 1]} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#020617',
-                    borderColor: '#1f2937',
-                    borderRadius: 8,
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="importance"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot={false}
-                  fill="#f59e0b"
-                  fillOpacity={0.1}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {explanation.regions && (
-            <div className="space-y-1">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                Key Regions
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {explanation.regions.slice(0, 6).map((r, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 rounded-full border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[11px] text-amber-300"
-                  >
-                    <span
-                      className="inline-block h-1.5 w-1.5 rounded-full"
-                      style={{
-                        backgroundColor: `rgba(245, 158, 11, ${r.importance})`,
-                      }}
-                    />
-                    {r.label || `Region ${r.start}-${r.end}`}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+      {explanation.summary && (
+        <div className="rounded-xl border border-[#f0f7d4] bg-[#f0f7d4]/30 p-4 text-xs italic text-[#555] leading-relaxed shadow-inner">
+          <p className="font-bold text-[#a5c422] not-italic mb-1 uppercase tracking-tight text-[10px]">Model Insight:</p>
+          "{explanation.summary}"
         </div>
       )}
     </div>

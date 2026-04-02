@@ -6,6 +6,7 @@ import {
   Clock,
   Filter,
   FileText,
+  History,
   Shield
 } from 'lucide-react';
 import { apiClient } from '../../lib/apiClient';
@@ -133,31 +134,31 @@ export const ScanHistoryPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 ring-1 ring-slate-700">
-            <Shield className="h-4 w-4 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f0f7d4] ring-1 ring-[#a5c422]/20">
+            <History className="h-5 w-5 text-[#a5c422]" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-sm font-semibold tracking-tight text-slate-50">
-              Analysis history
+            <h1 className="text-sm font-bold tracking-tight text-[#333]">
+              Analysis History
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#999]">
               Review past ECG analyses and predictions.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <Clock className="h-3.5 w-3.5" />
-          <span>{total.toLocaleString()} analyses</span>
+        <div className="flex items-center gap-2 text-[11px] font-medium text-[#777] bg-white border border-[#e5e5e5] px-3 py-1.5 rounded-full shadow-sm">
+          <Clock className="h-3.5 w-3.5 text-[#a5c422]" />
+          <span>{total.toLocaleString()} Analyses</span>
         </div>
       </header>
 
-      <section className="card space-y-3 p-4">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-          <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/80 px-2.5 py-1">
-            <Filter className="h-3.5 w-3.5 text-slate-400" />
-            <span className="text-[11px] uppercase tracking-wide text-slate-400">
+      <section className="card p-5 space-y-4">
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-[#e5e5e5] bg-[#f9f9f9] px-3 py-1.5">
+            <Filter className="h-3.5 w-3.5 text-[#777]" />
+            <span className="text-[11px] font-bold uppercase tracking-wide text-[#999]">
               Filters
             </span>
           </div>
@@ -168,9 +169,9 @@ export const ScanHistoryPage: React.FC = () => {
               setPage(1);
               setPredictionFilter(e.target.value);
             }}
-            className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-200 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="dg-input w-40"
           >
-            <option value="all">All predictions</option>
+            <option value="all">All Predictions</option>
             {PREDICTION_OPTIONS.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -178,8 +179,8 @@ export const ScanHistoryPage: React.FC = () => {
             ))}
           </select>
 
-          <div className="flex items-center gap-1">
-            <span className="text-[11px] text-slate-500">From</span>
+          <div className="flex items-center gap-2 px-3 py-1 bg-[#f9f9f9] border border-[#e5e5e5] rounded-lg">
+            <span className="text-[11px] font-bold text-[#999] uppercase">From</span>
             <input
               type="date"
               value={startDate}
@@ -187,11 +188,12 @@ export const ScanHistoryPage: React.FC = () => {
                 setPage(1);
                 setStartDate(e.target.value);
               }}
-              className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-200 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="bg-transparent text-xs text-[#333] outline-none"
             />
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-[11px] text-slate-500">To</span>
+
+          <div className="flex items-center gap-2 px-3 py-1 bg-[#f9f9f9] border border-[#e5e5e5] rounded-lg">
+            <span className="text-[11px] font-bold text-[#999] uppercase">To</span>
             <input
               type="date"
               value={endDate}
@@ -199,129 +201,141 @@ export const ScanHistoryPage: React.FC = () => {
                 setPage(1);
                 setEndDate(e.target.value);
               }}
-              className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-200 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="bg-transparent text-xs text-[#333] outline-none"
             />
           </div>
 
           <button
             type="button"
             onClick={handleResetFilters}
-            className="ml-auto rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-[11px] text-slate-300 shadow-sm transition hover:border-slate-600 hover:bg-slate-900"
+            className="ml-auto rounded-lg border border-[#e5e5e5] bg-white px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#a5c422] shadow-sm transition hover:bg-[#f0f7d4]"
           >
-            Reset
+            Reset Filters
           </button>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-slate-800">
-          <table className="min-w-full divide-y divide-slate-800 text-xs">
-            <thead className="bg-slate-950/80">
+        <div className="overflow-hidden rounded-xl border border-[#e5e5e5] shadow-sm">
+          <table className="min-w-full divide-y divide-[#e5e5e5] text-xs">
+            <thead className="bg-[#f9f9f9]">
               <tr>
                 <th
-                  className="cursor-pointer px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500"
+                  className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]"
                   onClick={() => handleSort('created_at')}
                 >
-                  Date
+                  <div className="flex items-center gap-1.5">
+                    <span>Date</span>
+                    {sortKey === 'created_at' && (
+                       <span className="text-[10px]">{sortDir === 'asc' ? '▲' : '▼'}</span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                  ECG file
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]">
+                  ECG File
                 </th>
-                <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]">
                   Prediction
                 </th>
                 <th
-                  className="cursor-pointer px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500"
+                  className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]"
                   onClick={() => handleSort('confidence')}
                 >
-                  Confidence
+                  <div className="flex items-center gap-1.5">
+                    <span>Confidence</span>
+                    {sortKey === 'confidence' && (
+                       <span className="text-[10px]">{sortDir === 'asc' ? '▲' : '▼'}</span>
+                    )}
+                  </div>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 bg-slate-950/60">
-              {loading && (
+            <tbody className="divide-y divide-[#e5e5e5] bg-white">
+              {loading ? (
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-3 py-6 text-center text-xs text-slate-500"
+                    className="px-4 py-8 text-center text-xs text-[#999]"
                   >
-                    Loading…
+                    <div className="flex items-center justify-center gap-2">
+                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#eee] border-t-[#a5c422]" />
+                       <span>Loading records…</span>
+                    </div>
                   </td>
                 </tr>
-              )}
-              {!loading && sortedRows.length === 0 && (
+              ) : sortedRows.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-3 py-6 text-center text-xs text-slate-500"
+                    className="px-4 py-8 text-center text-xs text-[#999]"
                   >
                     No analyses match the current filters.
                   </td>
                 </tr>
-              )}
-              {!loading &&
+              ) : (
                 sortedRows.map((row) => {
                   const confidencePct = Math.round(row.confidence * 100);
                   return (
                     <tr
                       key={row.id}
-                      className="transition-colors hover:bg-slate-900/80"
+                      className="transition-colors hover:bg-[#f9f9f9]"
                     >
-                      <td className="px-3 py-2 text-[11px] text-slate-300">
+                      <td className="px-4 py-3 text-[11px] text-[#555]">
                         {formatTimestamp(row.created_at)}
                       </td>
-                      <td className="px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-900 ring-1 ring-slate-800">
-                            <FileText className="h-3.5 w-3.5 text-slate-400" />
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f9f9f9] border border-[#e5e5e5]">
+                            <FileText className="h-4 w-4 text-[#777]" />
                           </div>
-                          <span className="text-[11px] font-medium text-slate-100">
+                          <span className="text-[11px] font-semibold text-[#333]">
                             {row.file_name}
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 align-middle">
-                        <span className="inline-flex rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-200">
+                      <td className="px-4 py-3 align-middle">
+                        <span className="inline-flex rounded-full bg-[#f0f7d4] px-3 py-0.5 text-[10px] font-bold text-[#a5c422] ring-1 ring-[#a5c422]/20">
                           {row.prediction}
                         </span>
                       </td>
-                      <td className="px-3 py-2 align-middle text-[11px] text-slate-100">
+                      <td className="px-4 py-3 align-middle text-[11px] font-bold text-[#333]">
                         {confidencePct}%
                       </td>
                     </tr>
                   );
-                })}
+                })
+              )}
             </tbody>
           </table>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 rounded-lg border border-red-900/70 bg-red-950/40 px-3 py-2 text-[11px] text-red-100">
-            <AlertTriangle className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2.5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[11px] text-red-600 font-medium">
+            <AlertTriangle className="h-4 w-4" />
             <p>{error}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 text-[11px] text-slate-500">
-          <span>
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-[11px] font-medium text-[#999]">
             Page {page} of {totalPages || 1}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               disabled={page <= 1 || loading}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="inline-flex items-center rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-[11px] text-slate-300 shadow-sm transition hover:border-slate-600 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg border border-[#e5e5e5] bg-white px-3 py-1.5 text-[11px] font-bold text-[#777] shadow-sm transition hover:bg-[#f9f9f9] disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="mr-1 h-3 w-3" />
-              Prev
+              <ChevronLeft className="h-3.5 w-3.5" />
+              <span>Previous</span>
             </button>
             <button
               type="button"
               disabled={page >= totalPages || loading}
               onClick={() => setPage((p) => p + 1)}
-              className="inline-flex items-center rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-[11px] text-slate-300 shadow-sm transition hover:border-slate-600 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg border border-[#e5e5e5] bg-white px-3 py-1.5 text-[11px] font-bold text-[#777] shadow-sm transition hover:bg-[#f9f9f9] disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Next
-              <ChevronRight className="ml-1 h-3 w-3" />
+              <span>Next</span>
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

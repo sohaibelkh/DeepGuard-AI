@@ -4,12 +4,13 @@
 
 /* Global typography and theme-aware base styles */
 body {
-  @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  @apply antialiased bg-[#f9f9f9] text-[#393939];
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Layout primitives */
 .dg-shell {
-  @apply min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  @apply min-h-screen bg-[#f9f9f9] text-[#393939];
 }
 
 .dg-page {
@@ -18,29 +19,29 @@ body {
 
 /* Card + surface primitives */
 .card {
-  @apply rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950/70 dark:shadow-subtle;
+  @apply rounded-xl border border-[#e5e5e5] bg-white shadow-sm;
 }
 
 .card-muted {
-  @apply rounded-xl border border-slate-200/70 bg-slate-50 dark:border-slate-800/80 dark:bg-slate-950/40;
+  @apply rounded-xl border border-[#eee] bg-[#fdfdfd];
 }
 
 /* Metrics + labels */
 .metric-label {
-  @apply text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400;
+  @apply text-[11px] font-medium uppercase tracking-wide text-[#999];
 }
 
 .metric-value {
-  @apply text-2xl font-semibold text-slate-900 dark:text-slate-50;
+  @apply text-2xl font-semibold text-[#333];
 }
 
 /* Generic pills/badges */
 .dg-pill {
-  @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300;
+  @apply inline-flex items-center gap-1.5 rounded-full border border-[#e5e5e5] bg-white px-2.5 py-1 text-[11px] font-medium text-[#555];
 }
 
 .dg-badge-muted {
-  @apply inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300;
+  @apply inline-flex items-center rounded-full bg-[#f0f0f0] px-2 py-0.5 text-[11px] font-medium text-[#777];
 }
 
 .dg-section-header {
@@ -48,18 +49,17 @@ body {
 }
 
 .dg-table {
-  @apply min-w-full divide-y divide-slate-200 text-xs dark:divide-slate-800;
+  @apply min-w-full divide-y divide-[#e5e5e5] text-xs;
 }
 
 .dg-table-head {
-  @apply bg-slate-50/80 text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:bg-slate-950/80 dark:text-slate-400;
+  @apply bg-[#f9f9f9] text-[11px] font-medium uppercase tracking-wide text-[#999];
 }
 
 .dg-table-row {
-  @apply transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/70;
+  @apply transition-colors hover:bg-[#f5f5f5];
 }
 
 .dg-input {
-  @apply h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-xs text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100;
+  @apply h-9 w-full rounded-md border border-[#ddd] bg-white px-3 text-xs text-[#333] shadow-sm outline-none transition focus:border-[#a5c422] focus:ring-1 focus:ring-[#a5c422];
 }
-

@@ -85,50 +85,55 @@ class ModelRegistry:
         fs: Optional[int] = None,
     ) -> dict:
         """
-        Run the full pipeline: preprocess → extract features / segment → predict.
-
-        Returns:
-            {
-                "prediction": str,
-                "confidence": float,
-                "class_probabilities": dict,
-                "model_used": str,
-                "processing_time_ms": float,
-            }
+        Inference with sliding window aggregation for better robustness.
         """
         if model_name not in self.models:
-            raise ValueError(f"Unknown model: {model_name}. Available: {list(self.models.keys())}")
+            raise ValueError(f"Unknown model: {model_name}")
 
         start = time.perf_counter()
         model = self.models[model_name]
 
-        # Preprocess the signal
-        clean_signal = preprocess_ecg(raw_signal, fs=fs)
-
-        # Segment to fixed length
-        segments = segment_signal(clean_signal)
+        # Use the upgraded preprocessing (handles 12-lead)
+        # Note: preprocess_and_segment returns a list of segments
+        from ml.preprocessing import preprocess_and_segment
+        segments = preprocess_and_segment(raw_signal, fs=fs)
+        
         if not segments:
-            raise ValueError("Signal too short to process.")
+            raise ValueError("Signal too short.")
 
-        # Use the first segment (main heartbeat window)
-        segment = segments[0]
+        # Aggregate predictions across segments
+        all_probs = []
+        all_reliabilities = []
+        for segment in segments:
+            if model_name in ["svm", "random_forest", "knn"]:
+                features = extract_features(segment, fs=fs)
+                _, _, class_probs, reliability = model.predict(features)
+            else:
+                _, _, class_probs, reliability = model.predict(segment)
+            all_probs.append(list(class_probs.values()))
+            all_reliabilities.append(reliability)
 
-        # Route to appropriate prediction method
-        if model_name in ["svm", "random_forest", "knn"]:
-            # Classical models need hand-crafted features
-            features = extract_features(segment, fs=fs)
-            prediction, confidence, class_probs = model.predict(features)
-        else:
-            # Deep learning models work on raw signal segments
-            prediction, confidence, class_probs = model.predict(segment)
-
+        # Soft voting (mean probability per class)
+        mean_probs = np.mean(all_probs, axis=0)
+        idx = int(np.argmax(mean_probs))
+        prediction = settings.ECG_CLASSES[idx]
+        confidence = float(mean_probs[idx])
+        
+        # Aggregate reliability
+        mean_reliability = float(np.mean(all_reliabilities))
+        is_reliable = mean_reliability > 0.7  # Threshold for clinical reliability
+        
+        final_probs = {c: round(float(p), 4) for c, p in zip(settings.ECG_CLASSES, mean_probs)}
         elapsed = (time.perf_counter() - start) * 1000.0
 
         return {
             "prediction": prediction,
             "confidence": round(confidence, 4),
-            "class_probabilities": class_probs,
+            "class_probabilities": final_probs,
+            "reliability_score": round(mean_reliability, 4),
+            "is_reliable": is_reliable,
             "model_used": model_name,
+            "total_segments": len(segments),
             "processing_time_ms": round(elapsed, 2),
         }
 
