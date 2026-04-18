@@ -1,0 +1,187 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb, Uint8List;
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ApiService {
+  static final ApiService _instance = ApiService._internal();
+
+  factory ApiService() {
+    return _instance;
+  }
+
+  ApiService._internal();
+
+  String get baseUrl {
+    if (kIsWeb) {
+      return 'http://127.0.0.1:8000/api';
+    } else if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000/api';
+    } else {
+      return 'http://127.0.0.1:8000/api';
+    }
+  }
+
+  // Helper to attach authorization header
+  Future<Map<String, String>> _getHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('dg_access_token');
+    if (token != null) {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+    }
+    return {
+      'Content-Type': 'application/json',
+    };
+  }
+
+  // Store tokens natively
+  Future<void> _storeTokens(String accessToken, String refreshToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('dg_access_token', accessToken);
+    await prefs.setString('dg_refresh_token', refreshToken);
+  }
+
+  // Login
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'identifier': email,
+          'password': password,
+        }),
+      );
+
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        await _storeTokens(body['access_token'], body['refresh_token']);
+        return {'success': true, 'user': body['user']};
+      } else {
+        return {'success': false, 'error': body['detail'] ?? 'Login failed'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
+
+  // Register
+  Future<Map<String, dynamic>> register(String fullName, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'full_name': fullName,
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        await _storeTokens(body['access_token'], body['refresh_token']);
+        return {'success': true, 'user': body['user']};
+      } else {
+        return {'success': false, 'error': body['detail'] ?? 'Registration failed'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
+
+  // Auto-login verify token validity
+  Future<bool> checkAuthStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('dg_access_token');
+    
+    if (token == null) return false;
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/me'),
+        headers: await _getHeaders(),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Fetch Dashboard Analytics
+  Future<Map<String, dynamic>?> fetchAnalyticsSummary() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/analytics/summary'),
+        headers: await _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Fetch available models
+  Future<List<dynamic>?> fetchModels() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/models/list'),
+        headers: await _getHeaders(),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body)['models'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Predict ECG (Multipart upload)
+  Future<Map<String, dynamic>?> predictECG({String? filePath, Uint8List? fileBytes, required String fileName, required String modelName}) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/predict?model_name=$modelName'),
+      );
+      
+      request.headers.addAll(await _getHeaders());
+      
+      if (fileBytes != null) {
+        request.files.add(http.MultipartFile.fromBytes('file', fileBytes, filename: fileName));
+      } else if (filePath != null) {
+        request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      } else {
+        return {'is_error': true, 'error': 'No file to upload'};
+      }
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 202) {
+        return jsonDecode(response.body);
+      } else {
+        return {'is_error': true, 'error': jsonDecode(response.body)['detail'] ?? 'Prediction failed'};
+      }
+    } catch (e) {
+      return {'is_error': true, 'error': 'Network error: $e'};
+    }
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('dg_access_token');
+    await prefs.remove('dg_refresh_token');
+  }
+}

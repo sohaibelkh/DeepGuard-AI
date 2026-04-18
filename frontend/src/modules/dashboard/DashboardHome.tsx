@@ -12,6 +12,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   Line,
   LineChart,
   Pie,
@@ -198,21 +199,21 @@ export const DashboardHome: React.FC = () => {
                 </p>
               </div>
             </header>
-            <div className="h-40">
+            <div className="h-64 pb-2">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={summary?.by_condition ?? []}
+                    data={(summary?.by_condition ?? []).map(d => ({ ...d, label: d.label ?? 'Unanalyzed' }))}
                     dataKey="value"
                     nameKey="label"
-                    innerRadius={36}
-                    outerRadius={60}
+                    innerRadius={46}
+                    outerRadius={75}
                     paddingAngle={3}
                   >
                     {(summary?.by_condition ?? []).map((entry, i) => {
                       const colors = ['#22c55e', '#f97316', '#a5c422', '#a855f7', '#eab308', '#ef4444'];
                       return (
-                        <Cell key={entry.label} fill={colors[i % colors.length]} />
+                        <Cell key={entry.label ?? 'Unanalyzed'} fill={colors[i % colors.length]} />
                       );
                     })}
                   </Pie>
@@ -220,9 +221,16 @@ export const DashboardHome: React.FC = () => {
                     contentStyle={{
                       backgroundColor: '#ffffff',
                       borderColor: '#e5e5e5',
-                      borderRadius: 8
+                      borderRadius: 8,
+                      fontSize: '12px',
                     }}
-                    labelStyle={{ fontSize: 11, color: '#333' }}
+                    itemStyle={{ color: '#333' }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={60}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: '12px', color: '#555', paddingTop: '20px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
