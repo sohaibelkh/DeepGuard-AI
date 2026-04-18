@@ -109,9 +109,6 @@ def explain_deep_learning_prediction(
     logits[0, pred_idx].backward()
 
     # Grad-CAM logic
-    # features: (1, 512, length')
-    # gradients: (1, 512, length')
-    gradients = model.layer4[1].bn2.weight.grad # Simplified: targeting bn weight grad or better hook
     # Real Grad-CAM usually needs feature map gradients. 
     # Let's use a simpler "gradient * input" or "Integrated Gradients" approximation for 1D
     # if full Grad-CAM hooks are not easily setup without modifying model.

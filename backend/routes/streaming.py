@@ -104,7 +104,7 @@ async def ecg_stream(websocket: WebSocket, record_id: int = Query(None)):
                 # We use hybrid_cnn_lstm as our prime model for streaming
                 try:
                     pred_res = await asyncio.to_thread(
-                        model_registry.predict, "hybrid_cnn_lstm", window_matrix.tolist()
+                        model_registry.predict, "hybrid_cnn_lstm", window_matrix
                     )
                     await websocket.send_json({
                         "type": "ai_analysis",

@@ -24,14 +24,7 @@ backend/deepguard.db
 backend/data/
 data/
 
-# ML model weights & checkpoints — use Git LFS or external storage instead
-backend/ml/weights/
-*.pt
-*.pth
-*.h5
-*.ckpt
-*.pkl
-*.joblib
+# ML model weights handled by Git LFS
 
 # Jupyter / misc artifacts
 .ipynb_checkpoints/

@@ -89,6 +89,11 @@ class ClassicalModel:
             return self._simulate_prediction(X)
 
         proba = self.pipeline.predict_proba(X)[0]
+        
+        # Temperature scaling to calibrate and sharpen classical ML probabilities
+        logits = np.log(proba + 1e-10) / 0.5
+        proba = np.exp(logits) / np.sum(np.exp(logits))
+        
         idx = int(np.argmax(proba))
         class_probs = {c: float(p) for c, p in zip(self.classes, proba)}
         # Classical models use a static reliability for now

@@ -95,7 +95,7 @@ class ModelRegistry:
 
         # ── Detect and decode multi-lead sentinel encoding ────────────────
         # _parse_ecg_file encodes multi-column CSVs as [-999.0, n_cols, data...]
-        if len(raw_signal) > 2 and raw_signal[0] == -999.0:
+        if getattr(raw_signal, "ndim", 1) == 1 and len(raw_signal) > 2 and raw_signal[0] == -999.0:
             n_cols = int(raw_signal[1])
             data = raw_signal[2:]
             n_samples = len(data) // n_cols

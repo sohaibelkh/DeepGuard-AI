@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Activity, Heart, Radio, Wifi, WifiOff } from 'lucide-react';
+import { Activity, Heart, Radio, Wifi, WifiOff, Cpu, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import {
   Line,
   LineChart,
@@ -14,6 +14,13 @@ interface ECGPoint {
   value: number;
 }
 
+interface AIAnalysis {
+  index: number;
+  prediction: string;
+  confidence: number;
+  timestamp: Date;
+}
+
 type ConnStatus = 'disconnected' | 'connecting' | 'connected' | 'done';
 
 export const ECGStreamPage: React.FC = () => {
@@ -21,6 +28,10 @@ export const ECGStreamPage: React.FC = () => {
   const [data, setData] = useState<ECGPoint[]>([]);
   const [heartRate, setHeartRate] = useState<number>(0);
   const [progress, setProgress] = useState<number>(0);
+  const [aiResults, setAiResults] = useState<AIAnalysis[]>([]);
+  const [latestDiagnosis, setLatestDiagnosis] = useState<AIAnalysis | null>(null);
+  const [records, setRecords] = useState<any[]>([]);
+  const [selectedRecordId, setSelectedRecordId] = useState<string>('');
   const wsRef = useRef<WebSocket | null>(null);
   const MAX_VISIBLE = 600;
 
@@ -33,9 +44,17 @@ export const ECGStreamPage: React.FC = () => {
     setData([]);
     setHeartRate(0);
     setProgress(0);
+    setAiResults([]);
+    setLatestDiagnosis(null);
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${protocol}://${window.location.host}/api/ws/ecg-stream`);
+    let wsUrl = `${protocol}://${window.location.host}/api/ws/ecg-stream`;
+    
+    if (selectedRecordId) {
+      wsUrl += `?record_id=${selectedRecordId}`;
+    }
+    
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => setStatus('connected');
 
@@ -52,6 +71,15 @@ export const ECGStreamPage: React.FC = () => {
         });
         setHeartRate(msg.heart_rate || 0);
         setProgress(msg.progress || 0);
+      } else if (msg.type === 'ai_analysis') {
+        const result: AIAnalysis = {
+          index: msg.index,
+          prediction: msg.prediction,
+          confidence: msg.confidence,
+          timestamp: new Date(),
+        };
+        setLatestDiagnosis(result);
+        setAiResults((prev) => [result, ...prev].slice(0, 10)); // Keep last 10
       } else if (msg.type === 'stream_end') {
         setStatus('done');
       }
@@ -72,6 +100,24 @@ export const ECGStreamPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Fetch available records for streaming
+    const fetchRecords = async () => {
+      try {
+        const token = localStorage.getItem('dg_access_token');
+        if (!token) return;
+        const res = await fetch('/api/history/analyses?page_size=50', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecords(data.items || []);
+        }
+      } catch (err) {
+        console.error("Failed to load records for stream", err);
+      }
+    };
+    fetchRecords();
+
     return () => {
       wsRef.current?.close();
     };
@@ -108,6 +154,18 @@ export const ECGStreamPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-4 bg-white border border-[#e5e5e5] px-4 py-2 rounded-xl shadow-sm">
+          {!status.includes('connected') && (
+            <select
+              value={selectedRecordId}
+              onChange={(e) => setSelectedRecordId(e.target.value)}
+              className="text-xs border border-gray-200 rounded-md py-1 px-2 focus:ring-[#a5c422] focus:border-[#a5c422] outline-none max-w-[150px]"
+            >
+              <option value="">Demo (Synthetic)</option>
+              {records.map(r => (
+                <option key={r.id} value={r.id}>Record #{r.id} - {r.file_name || 'Upload'}</option>
+              ))}
+            </select>
+          )}
           <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${statusColors[status]}`}>
             {status === 'connected' ? (
               <Wifi className="h-4 w-4" />
@@ -167,44 +225,114 @@ export const ECGStreamPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Live ECG Chart */}
-      <section className="card p-5 space-y-4">
-        <header className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-[#a5c422]" />
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
-            ECG Signal
-          </p>
-          {status === 'connected' && (
-            <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full ring-1 ring-emerald-200">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              LIVE FEED
-            </span>
-          )}
-        </header>
-        <div className="h-80 w-full bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
-          {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm font-medium text-[#999] italic">
-              <p>Press "Start Stream" to begin real-time ECG visualization.</p>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ left: -20, right: 10, top: 5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis dataKey="index" stroke="#999" fontSize={10} tickCount={6} />
-                <YAxis stroke="#999" fontSize={10} domain={['auto', 'auto']} />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#a5c422"
-                  strokeWidth={2}
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </section>
+      {/* Live ECG Chart & AI Analysis */}
+      <div className="grid gap-6 lg:grid-cols-4">
+        {/* Chart Column */}
+        <section className="card p-5 space-y-4 lg:col-span-3 h-[450px] flex flex-col">
+          <header className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-[#a5c422]" />
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+              ECG Signal Trace
+            </p>
+            {status === 'connected' && (
+              <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full ring-1 ring-emerald-200">
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                LIVE FEED
+              </span>
+            )}
+          </header>
+          <div className="flex-1 w-full bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
+            {data.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm font-medium text-[#999] italic">
+                <p>Press "Start Stream" to begin real-time ECG visualization.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={{ left: -20, right: 10, top: 5, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                  <XAxis dataKey="index" stroke="#999" fontSize={10} tickCount={6} />
+                  <YAxis stroke="#999" fontSize={10} domain={['auto', 'auto']} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#a5c422"
+                    strokeWidth={2.5}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </section>
+
+        {/* AI Monitoring Column */}
+        <section className="card p-5 space-y-4 lg:col-span-1 h-[450px] flex flex-col">
+          <header className="flex items-center gap-2">
+            <Cpu className="h-4 w-4 text-purple-500" />
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
+              Live Diagnostics
+            </p>
+          </header>
+          
+          {/* Current AI State Highlight */}
+          <div className={`p-4 rounded-xl border transition-colors duration-500 ${
+            !latestDiagnosis 
+              ? 'bg-slate-50 border-slate-200' 
+              : latestDiagnosis.prediction === 'Normal' 
+                ? 'bg-emerald-50 border-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
+                : 'bg-red-50 border-red-200 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+          }`}>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+              Detector Status
+            </p>
+            {!latestDiagnosis ? (
+              <p className="text-lg font-bold text-gray-400">Scanning Stream...</p>
+            ) : (
+              <div className="flex items-center gap-3">
+                {latestDiagnosis.prediction === 'Normal' ? (
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                ) : (
+                  <ShieldAlert className="h-6 w-6 animate-pulse text-red-500" />
+                )}
+                <div>
+                  <p className={`text-lg font-bold leading-tight ${latestDiagnosis.prediction === 'Normal' ? 'text-emerald-700' : 'text-red-700'}`}>
+                    {latestDiagnosis.prediction}
+                  </p>
+                  <p className={`text-xs font-medium ${latestDiagnosis.prediction === 'Normal' ? 'text-emerald-600/80' : 'text-red-600/80'}`}>
+                    Confidence: {(latestDiagnosis.confidence * 100).toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-3 pt-2 custom-scrollbar">
+            {aiResults.map((res, i) => {
+              const isNormal = res.prediction === 'Normal';
+              return (
+                <div key={res.index + i} className="flex gap-3 text-sm animate-in slide-in-from-right-2 fade-in">
+                  <div className={`mt-0.5 rounded-full p-1 h-5 w-5 flex items-center justify-center ${isNormal ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                    {isNormal ? (
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    ) : (
+                      <AlertTriangle className="h-3 w-3 text-red-600" />
+                    )}
+                  </div>
+                  <div>
+                    <p className={`font-medium leading-none mb-1 ${isNormal ? 'text-gray-700' : 'text-red-600'}`}>
+                      {res.prediction}
+                    </p>
+                    <p className="text-[10px] text-gray-400">
+                      {res.timestamp.toLocaleTimeString()} • Frame {res.index}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
 
       <section className="card p-5 text-xs text-[#777] leading-relaxed bg-white/50 border-dashed border-[#e5e5e5]">
         <p>
