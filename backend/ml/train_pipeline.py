@@ -61,47 +61,53 @@ def generate_synthetic_data(num_samples=100):
     print("Synthetic dataset ready.")
 
 def download_ptbxl(fast_mode=False):
-    """Download PTB-XL dataset using curl and unzip."""
+    """Download PTB-XL dataset using curl and Python zipfile (cross-platform)."""
     if not METADATA_FILE.exists():
         if fast_mode:
             generate_synthetic_data()
             return
-        
+
         print("Downloading PTB-XL dataset (approx. 2GB)...")
         DATA_DIR.mkdir(parents=True, exist_ok=True)
-        
-        # Correct direct ZIP download URL from PhysioNet
+
         url = "https://physionet.org/content/ptb-xl/get-zip/1.0.3/"
         zip_path = DATA_DIR / "ptbxl.zip"
-        
+
         import subprocess
+        import zipfile
         try:
-            print(f"Fetching from {url}...")
-            # Adding -C - to resume from previous offset if file exists
-            subprocess.run(["curl", "-L", "-C", "-", "-o", str(zip_path), url], check=True)
-            
-            print("Extracting dataset...")
-            # Use unzip -o to overwrite and -d for destination
-            subprocess.run(["unzip", "-o", str(zip_path), "-d", str(DATA_DIR)], check=True)
-            
-            # The zip usually contains a folder named 'ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.3'
-            # Find the actual directory and move contents up
+            # Download (curl with resume support)
+            if not zip_path.exists():
+                print(f"Fetching from {url}...")
+                subprocess.run(["curl", "-L", "-C", "-", "-o", str(zip_path), url], check=True)
+            else:
+                print(f"ZIP already present at {zip_path}, skipping download.")
+
+            print("Extracting dataset (this may take a few minutes)...")
+            # Use Python's built-in zipfile — works on Windows, Mac, Linux
+            with zipfile.ZipFile(str(zip_path), "r") as zf:
+                zf.extractall(str(DATA_DIR))
+
+            # The zip usually extracts into a long subfolder name starting with 'ptb-xl'
+            # Move its contents up one level into DATA_DIR
             extracted_dirs = [d for d in DATA_DIR.iterdir() if d.is_dir() and d.name.startswith("ptb-xl")]
             if extracted_dirs:
                 source_dir = extracted_dirs[0]
                 for item in source_dir.iterdir():
                     target = DATA_DIR / item.name
                     if target.exists():
-                        if target.is_dir(): shutil.rmtree(target)
-                        else: target.unlink()
+                        if target.is_dir():
+                            shutil.rmtree(target)
+                        else:
+                            target.unlink()
                     shutil.move(str(item), str(DATA_DIR / item.name))
                 source_dir.rmdir()
-            
+
             zip_path.unlink()
             print("Dataset ready.")
         except Exception as e:
             print(f"Error during download/extraction: {e}")
-            # Do NOT unlink zip_path here to allow for manual or automated resume
+            # Keep the zip file to allow resume on next run
     else:
         print("PTB-XL dataset already present.")
 

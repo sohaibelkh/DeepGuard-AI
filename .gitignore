@@ -19,3 +19,21 @@ build/
 *.log
 *.db
 backend/deepguard.db
+
+# Large datasets — do NOT commit raw ECG data
+backend/data/
+data/
+
+# ML model weights & checkpoints — use Git LFS or external storage instead
+backend/ml/weights/
+*.pt
+*.pth
+*.h5
+*.ckpt
+*.pkl
+*.joblib
+
+# Jupyter / misc artifacts
+.ipynb_checkpoints/
+*.egg-info/
+.DS_Store

@@ -28,3 +28,4 @@ h11
 httptools
 pyyaml
 watchfiles
+wfdb
