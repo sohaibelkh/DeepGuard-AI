@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     ]
 
     # ── Chatbot ──────────────────────────────────────────────────────────
-    GROQ_API_KEY: str = ""
+    GROQ_API_KEY: str = ""  # Set via GROQ_API_KEY in backend/.env — never hardcode!
     GROQ_MODEL: str = "llama-3.3-70b-versatile" # Updated to a modern supported Groq model
     VECTOR_DB_DIR: str = str(BASE_DIR / "dbVector")
     OLLAMA_BASE_URL: str = "http://localhost:11434"

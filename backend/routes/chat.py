@@ -2,7 +2,7 @@
 Chatbot Route
 ================
 Provides an interface to interact with the LLM (Groq) using RAG (ChromaDB)
-based on a PDF guide for business creation.
+based on the DeepGuard-AI platform knowledge base documentation.
 """
 
 from __future__ import annotations
@@ -17,11 +17,12 @@ from auth import get_current_user
 from models.user import User
 
 # LangChain imports
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.document_loaders import UnstructuredMarkdownLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -33,10 +34,14 @@ class ChatResponse(BaseModel):
 
 # ── RAG Setup ───────────────────────────────────────────────────────────
 
-# Switching to local HuggingFace embeddings to avoid Ollama dependency
-embeddingModel = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2"
-)
+# Lazy-initialized to avoid downloading the model on every startup
+_embeddingModel = None
+
+def get_embedding_model():
+    global _embeddingModel
+    if _embeddingModel is None:
+        _embeddingModel = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    return _embeddingModel
 
 # Global variable to store vector DB instance
 _db_vector = None
@@ -45,42 +50,58 @@ def get_vector_db():
     global _db_vector
     if _db_vector is None:
         db_dir = Path(settings.VECTOR_DB_DIR)
+        knowledge_base_path = Path("data/deepguard_chatbot_knowledge.md")
         print(f"Initializing Vector DB at {db_dir}...")
-        
-        # If DB doesn't exist, create it from the PDF
-        if not db_dir.exists():
-            pdf_path = Path("data/Bpifrance Creation_GUIDE PRATIQUE DU CREATEUR_2019.pdf")
-            if not pdf_path.exists():
-                print(f"Warning: PDF not found at {pdf_path}. Creating empty DB.")
+
+        # Always rebuild if knowledge base exists and DB is missing or empty
+        should_build = not db_dir.exists()
+
+        if should_build:
+            if not knowledge_base_path.exists():
+                print(f"Warning: Knowledge base not found at {knowledge_base_path}. Creating empty DB.")
                 os.makedirs(db_dir, exist_ok=True)
-                _db_vector = Chroma(persist_directory=str(db_dir), embedding_function=embeddingModel)
+                _db_vector = Chroma(persist_directory=str(db_dir), embedding_function=get_embedding_model())
                 return _db_vector
-            
-            print(f"Loading PDF from {pdf_path}...")
-            loader = PyPDFLoader(str(pdf_path))
+
+            print(f"Loading DeepGuard knowledge base from {knowledge_base_path}...")
+            # Load as plain text (markdown)
+            loader = TextLoader(str(knowledge_base_path), encoding="utf-8")
             docs = loader.load()
-            
-            print(f"Splitting {len(docs)} pages...")
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+
+            print(f"Splitting {len(docs)} documents into chunks...")
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1000,
+                chunk_overlap=200,
+                separators=["\n## ", "\n### ", "\n#### ", "\n", " "]
+            )
             chunks = text_splitter.split_documents(docs)
-            
-            print(f"Embedding {len(chunks)} chunks (this may take a while)...")
+
+            print(f"Embedding {len(chunks)} chunks into vector DB...")
             _db_vector = Chroma.from_documents(
                 documents=chunks,
-                embedding=embeddingModel,
+                embedding=get_embedding_model(),
                 persist_directory=str(db_dir)
             )
-            print("Vector DB created successfully.")
+            print("Vector DB created successfully from DeepGuard knowledge base.")
         else:
             print("Loading existing Vector DB...")
-            _db_vector = Chroma(persist_directory=str(db_dir), embedding_function=embeddingModel)
+            _db_vector = Chroma(persist_directory=str(db_dir), embedding_function=get_embedding_model())
             
     return _db_vector
 
-llm = ChatGroq(
-    groq_api_key=settings.GROQ_API_KEY,
-    model_name=settings.GROQ_MODEL
-)
+# Lazy-initialized to avoid crashing on startup when GROQ_API_KEY is not set
+_llm = None
+
+def get_llm():
+    global _llm
+    if _llm is None:
+        if not settings.GROQ_API_KEY:
+            raise HTTPException(status_code=503, detail="GROQ_API_KEY is not configured. Set it in backend/.env")
+        _llm = ChatGroq(
+            groq_api_key=settings.GROQ_API_KEY,
+            model_name=settings.GROQ_MODEL
+        )
+    return _llm
 
 # ── Endpoints ───────────────────────────────────────────────────────────
 
@@ -106,7 +127,7 @@ async def chat(request: ChatRequest, user: User = Depends(get_current_user)):
             f"Si la réponse n'est pas dans le contexte, dites-le poliment."
         )
         
-        response = llm.invoke(prompt)
+        response = get_llm().invoke(prompt)
         return ChatResponse(answer=response.content)
         
     except Exception as e:
