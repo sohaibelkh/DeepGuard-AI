@@ -154,7 +154,7 @@ export const ECGStreamPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-4 bg-white border border-[#e5e5e5] px-4 py-2 rounded-xl shadow-sm">
-          {!status.includes('connected') && (
+          {status !== 'connected' && (
             <select
               value={selectedRecordId}
               onChange={(e) => setSelectedRecordId(e.target.value)}
