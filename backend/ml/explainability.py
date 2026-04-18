@@ -94,7 +94,10 @@ def explain_deep_learning_prediction(
     model.eval()
 
     # Move signal to tensor: (1, 12, length)
-    input_tensor = torch.tensor(signal, dtype=torch.float32).unsqueeze(0).to(device)
+    tensor = torch.tensor(signal, dtype=torch.float32).to(device)
+    if tensor.dim() == 1:
+        tensor = tensor.repeat(12, 1) # Broadcast to 12 leads
+    input_tensor = tensor.unsqueeze(0) # Add batch dim -> (1, 12, N)
     input_tensor.requires_grad = True
 
     # Forward pass
