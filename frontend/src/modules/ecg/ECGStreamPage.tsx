@@ -110,7 +110,16 @@ export const ECGStreamPage: React.FC = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          setRecords(data.items || []);
+          const items = data.items || [];
+          const uniqueItems = [];
+          const seenFiles = new Set();
+          for (const item of items) {
+             if (!seenFiles.has(item.file_name)) {
+                seenFiles.add(item.file_name);
+                uniqueItems.push(item);
+             }
+          }
+          setRecords(uniqueItems);
         }
       } catch (err) {
         console.error("Failed to load records for stream", err);

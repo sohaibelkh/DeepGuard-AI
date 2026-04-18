@@ -26,6 +26,7 @@ interface AnalysisRow {
   prediction: string;
   confidence: number;
   created_at: string;
+  true_diagnosis?: string | null;
 }
 
 interface AnalysisHistoryResponse {
@@ -114,6 +115,16 @@ export const ScanHistoryPage: React.FC = () => {
     } catch (err) {
       console.error("Failed to download report", err);
       alert("Désolé, impossible de télécharger le rapport. Vérifiez votre connexion.");
+    }
+  };
+
+  const handleVerify = async (recordId: number, groundTruth: string) => {
+    try {
+      await apiClient.patch(`/history/${recordId}/verify`, { true_diagnosis: groundTruth });
+      setRows((prev) => prev.map(r => r.id === recordId ? { ...r, true_diagnosis: groundTruth } : r));
+    } catch (err) {
+      console.error("Failed to verify diagnosis", err);
+      alert("Failed to save verification.");
     }
   };
 
@@ -254,6 +265,9 @@ export const ScanHistoryPage: React.FC = () => {
                 <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]">
                   Prediction
                 </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]">
+                  Ground Truth
+                </th>
                 <th
                   className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#999]"
                   onClick={() => handleSort('confidence')}
@@ -274,7 +288,7 @@ export const ScanHistoryPage: React.FC = () => {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-xs text-[#999]"
                   >
                     <div className="flex items-center justify-center gap-2">
@@ -286,7 +300,7 @@ export const ScanHistoryPage: React.FC = () => {
               ) : sortedRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-xs text-[#999]"
                   >
                     No analyses match the current filters.
@@ -317,6 +331,18 @@ export const ScanHistoryPage: React.FC = () => {
                         <span className="inline-flex rounded-full bg-[#f0f7d4] px-3 py-0.5 text-[10px] font-bold text-[#a5c422] ring-1 ring-[#a5c422]/20">
                           {row.prediction}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <select 
+                          value={row.true_diagnosis || ""}
+                          onChange={(e) => handleVerify(row.id, e.target.value)}
+                          className={`text-xs p-1 rounded-md border outline-none font-medium transition cursor-pointer ${row.true_diagnosis ? "border-[#a5c422] bg-[#f0f7d4] text-[#a5c422]" : "border-[#e5e5e5] bg-[#f9f9f9] text-[#777]"}`}
+                        >
+                          <option value="" disabled>Verify...</option>
+                          {PREDICTION_OPTIONS.map(p => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-4 py-3 align-middle text-[11px] font-bold text-[#333]">
                         {confidencePct}%

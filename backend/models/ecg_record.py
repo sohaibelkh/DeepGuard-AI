@@ -24,6 +24,9 @@ class ECGRecord(Base):
     raw_signal: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     signal_length: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
+    # Doctor Verification Ground Truth
+    true_diagnosis: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+
     # Prediction results
     prediction: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -54,6 +57,7 @@ class ECGRecord(Base):
             "model_used": self.model_used,
             "processing_time_ms": self.processing_time_ms,
             "class_probabilities": self.class_probabilities,
+            "true_diagnosis": self.true_diagnosis,
             "recommendations": self.recommendations,
             "created_at": self.created_at.isoformat(),
         }

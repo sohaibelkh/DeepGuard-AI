@@ -28,7 +28,15 @@ async def get_db() -> AsyncSession:  # noqa: E302
             await session.close()
 
 
+from sqlalchemy import text
+
 async def create_tables() -> None:
     """Create all tables (used on app startup)."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        
+        # Zero-downtime migration
+        try:
+            await conn.execute(text("ALTER TABLE ecg_records ADD COLUMN true_diagnosis VARCHAR(64)"))
+        except Exception:
+            pass # Column exists

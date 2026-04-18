@@ -10,6 +10,7 @@ import time
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Dict, Union
+from pydantic import BaseModel
 from http import HTTPStatus
 
 import numpy as np
@@ -325,6 +326,31 @@ async def explain(
         "explanation": explanation,
     }
 
+
+class VerificationRequest(BaseModel):
+    true_diagnosis: str
+
+@router.patch("/history/{record_id}/verify")
+async def verify_analysis(
+    record_id: int,
+    req: VerificationRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Allow a doctor/user to verify or override the AI prediction."""
+    if req.true_diagnosis not in settings.ECG_CLASSES:
+         raise HTTPException(status_code=400, detail="Invalid diagnosis class.")
+         
+    res = await db.execute(select(ECGRecord).where(ECGRecord.id == record_id, ECGRecord.user_id == user.id))
+    record = res.scalar_one_or_none()
+    
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found.")
+        
+    record.true_diagnosis = req.true_diagnosis
+    await db.commit()
+    await db.refresh(record)
+    return {"message": "Diagnosis verified successfully", "true_diagnosis": record.true_diagnosis}
 
 # ── GET /api/history ──────────────────────────────────────────────────────────
 
