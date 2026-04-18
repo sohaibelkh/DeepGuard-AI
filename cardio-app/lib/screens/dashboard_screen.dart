@@ -4,6 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:universal_html/html.dart' as html;
 import '../api_service.dart';
 import '../widgets/app_drawer.dart';
 
@@ -65,18 +67,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final bytes = await api.downloadReportPdf(recordId);
     
     if (bytes != null) {
-      try {
-        final dir = await getApplicationDocumentsDirectory();
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final file = File('${dir.path}/DeepGuard_Report_${recordId}_$timestamp.pdf');
-        await file.writeAsBytes(bytes);
-        
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Report downloaded successfully!', style: TextStyle(color: Colors.white)), backgroundColor: const Color(0xFFA5C422), duration: const Duration(seconds: 4), action: SnackBarAction(label: 'OPEN', textColor: Colors.white, onPressed: () => OpenFilex.open(file.path))));
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save file: $e', style: const TextStyle(fontSize: 10)), backgroundColor: Colors.red));
+      if (kIsWeb) {
+         try {
+           final blob = html.Blob([bytes], 'application/pdf');
+           final url = html.Url.createObjectUrlFromBlob(blob);
+           final anchor = html.document.createElement('a') as html.AnchorElement
+             ..href = url
+             ..style.display = 'none'
+             ..download = 'DeepGuard_Report_$recordId.pdf';
+           html.document.body!.children.add(anchor);
+           anchor.click();
+           html.document.body!.children.remove(anchor);
+           html.Url.revokeObjectUrl(url);
+           
+           if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report downloaded successfully!', style: TextStyle(color: Colors.white)), backgroundColor: Color(0xFFA5C422)));
+         } catch (e) {
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Web download failed: $e', style: const TextStyle(fontSize: 10)), backgroundColor: Colors.red));
+         }
+      } else {
+        try {
+          final dir = await getApplicationDocumentsDirectory();
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          final file = File('${dir.path}/DeepGuard_Report_${recordId}_$timestamp.pdf');
+          await file.writeAsBytes(bytes);
+          
+          if (mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Report downloaded successfully!', style: TextStyle(color: Colors.white)), backgroundColor: const Color(0xFFA5C422), duration: const Duration(seconds: 4), action: SnackBarAction(label: 'OPEN', textColor: Colors.white, onPressed: () => OpenFilex.open(file.path))));
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save file: $e', style: const TextStyle(fontSize: 10)), backgroundColor: Colors.red));
+          }
         }
       }
     } else {
