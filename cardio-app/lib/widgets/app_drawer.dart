@@ -4,6 +4,7 @@ import '../screens/login_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/ecg_diagnosis_screen.dart';
 import '../screens/live_ecg_screen.dart';
+import '../screens/history_screen.dart';
 
 
 
@@ -197,7 +198,22 @@ class AppDrawer extends StatelessWidget {
                         }
                       },
                     ),
-                    _buildNavItem(context, label: 'History', icon: Icons.history_rounded, route: '/history', isActive: currentRoute == '/history'),
+                    _buildNavItem(
+                      context,
+                      label: 'History',
+                      icon: Icons.history_rounded,
+                      route: '/history',
+                      isActive: currentRoute == '/history',
+                      onTap: () {
+                        if (currentRoute != '/history') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const HistoryScreen()),
+                          );
+                        }
+                      },
+                    ),
                     _buildNavItem(context, label: 'AI Assistant', icon: Icons.chat_bubble_outline_rounded, route: '/chat', isActive: currentRoute == '/chat'),
                     _buildNavItem(context, label: 'Model Performance', icon: Icons.insights_rounded, route: '/performance', isActive: currentRoute == '/performance'),
                     _buildNavItem(context, label: 'Profile', icon: Icons.person_outline_rounded, route: '/profile', isActive: currentRoute == '/profile'),

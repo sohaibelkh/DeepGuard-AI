@@ -216,6 +216,57 @@ class ApiService {
      }
   }
 
+  // Get Paginated Analysis History with Filters
+  Future<Map<String, dynamic>?> getAnalysisHistory({
+    int page = 1,
+    int pageSize = 10,
+    String? prediction,
+    String? startDate,
+    String? endDate,
+  }) async {
+    try {
+      final queryParams = <String, String>{
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+      if (prediction != null && prediction.isNotEmpty && prediction != 'all') {
+        queryParams['prediction'] = prediction;
+      }
+      if (startDate != null && startDate.isNotEmpty) {
+        queryParams['start'] = startDate;
+      }
+      if (endDate != null && endDate.isNotEmpty) {
+        queryParams['end'] = endDate;
+      }
+      
+      final String queryString = Uri(queryParameters: queryParams).query;
+      final uri = Uri.parse('$baseUrl/history/analyses?$queryString');
+      
+      final response = await http.get(uri, headers: await _getHeaders());
+      
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Update ground truth logic 
+  Future<bool> verifyDiagnosis(int recordId, String trueDiagnosis) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/history/$recordId/verify'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'true_diagnosis': trueDiagnosis}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('dg_access_token');
