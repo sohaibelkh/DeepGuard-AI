@@ -253,10 +253,10 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
       ),
     );
   }
-
-  Widget _buildComparisonChart() {
+Widget _buildComparisonChart() {
     final metrics = ['accuracy', 'precision', 'recall', 'f1_score'];
     final labels = ['Accuracy', 'Precision', 'Recall', 'F1'];
+  
 
     List<BarChartGroupData> barGroups = [];
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb, Uint8List;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -338,6 +339,18 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<Uint8List?> downloadReportPdf(int recordId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/report/$recordId'), headers: await _getHeaders());
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 

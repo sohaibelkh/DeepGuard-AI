@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 import '../api_service.dart';
 import '../widgets/app_drawer.dart';
 
@@ -54,6 +57,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return DateFormat('MMM dd, yyyy, hh:mm a').format(dt);
     } catch (_) {
       return isoDate;
+    }
+  }
+
+  Future<void> _handleDownloadPdf(int recordId) async {
+    final api = ApiService();
+    final bytes = await api.downloadReportPdf(recordId);
+    
+    if (bytes != null) {
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final file = File('${dir.path}/DeepGuard_Report_${recordId}_$timestamp.pdf');
+        await file.writeAsBytes(bytes);
+        
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Report downloaded successfully!', style: TextStyle(color: Colors.white)), backgroundColor: const Color(0xFFA5C422), duration: const Duration(seconds: 4), action: SnackBarAction(label: 'OPEN', textColor: Colors.white, onPressed: () => OpenFilex.open(file.path))));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save file: $e', style: const TextStyle(fontSize: 10)), backgroundColor: Colors.red));
+        }
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to download report from server.', style: TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -523,21 +552,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Text('${((item['confidence'] ?? 0.0) * 100).toInt()}%'),
                     ),
                     DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFA5C422),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'PDF',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                      InkWell(
+                        onTap: () {
+                           if (item['id'] != null) {
+                              _handleDownloadPdf(item['id']);
+                           }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFA5C422),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'PDF',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

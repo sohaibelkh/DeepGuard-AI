@@ -154,14 +154,35 @@ def generate_medical_report(user_name: str, record_data: dict) -> BytesIO:
     # 5. Recommendations
     if record_data.get('recommendations'):
         elements.append(Paragraph("AI Assistant Recommendations", section_title_style))
+        import ast
         try:
-            recs = json.loads(record_data['recommendations'])
+            raw_recs = record_data['recommendations']
+            try:
+                recs = json.loads(raw_recs)
+            except json.JSONDecodeError:
+                recs = ast.literal_eval(raw_recs)
+                
             if isinstance(recs, list):
                 for rec in recs:
                     elements.append(Paragraph(f"• {rec}", value_style))
+            elif isinstance(recs, dict):
+                if 'title' in recs:
+                    elements.append(Paragraph(f"<b>{recs['title']}</b> (Urgency: {str(recs.get('urgency', 'N/A')).upper()})", value_style))
+                    elements.append(Spacer(1, 0.05 * inch))
+                if 'summary' in recs:
+                    elements.append(Paragraph(f"<b>Summary:</b> {recs['summary']}", value_style))
+                    elements.append(Spacer(1, 0.05 * inch))
+                if 'recommendations' in recs and isinstance(recs['recommendations'], list):
+                    elements.append(Paragraph("<b>Actionable Steps:</b>", value_style))
+                    for rec in recs['recommendations']:
+                        elements.append(Paragraph(f"• {rec}", value_style))
+                    elements.append(Spacer(1, 0.05 * inch))
+                if 'follow_up' in recs:
+                    elements.append(Paragraph(f"<b>Follow-up:</b> {recs['follow_up']}", value_style))
+                    elements.append(Spacer(1, 0.05 * inch))
             else:
                 elements.append(Paragraph(str(recs), value_style))
-        except:
+        except Exception:
             elements.append(Paragraph(str(record_data['recommendations']), value_style))
             
     elements.append(Spacer(1, 0.5 * inch))
