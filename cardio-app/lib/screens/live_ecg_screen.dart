@@ -29,14 +29,6 @@ class _LiveEcgScreenState extends State<LiveEcgScreen> {
   WebSocketChannel? _channel;
   final int _maxVisible = 600;
 
-  static const Map<String, Color> CLASS_COLORS = {
-    'Normal': Color(0xFF22C55E),
-    'Arrhythmia': Color(0xFFF97316),
-    'Atrial Fibrillation': Color(0xFFA5C422),
-    'Myocardial Infarction': Color(0xFFEF4444),
-    'Tachycardia': Color(0xFFA855F7),
-    'Bradycardia': Color(0xFFEAB308),
-  };
 
   @override
   void initState() {

@@ -6,6 +6,7 @@ import '../screens/ecg_diagnosis_screen.dart';
 import '../screens/live_ecg_screen.dart';
 import '../screens/history_screen.dart';
 import '../screens/chat_screen.dart';
+import '../screens/performance_screen.dart';
 
 
 
@@ -231,7 +232,22 @@ class AppDrawer extends StatelessWidget {
                         }
                       },
                     ),
-                    _buildNavItem(context, label: 'Model Performance', icon: Icons.insights_rounded, route: '/performance', isActive: currentRoute == '/performance'),
+                    _buildNavItem(
+                      context,
+                      label: 'Model Performance',
+                      icon: Icons.insights_rounded,
+                      route: '/performance',
+                      isActive: currentRoute == '/performance',
+                      onTap: () {
+                        if (currentRoute != '/performance') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const PerformanceScreen()),
+                          );
+                        }
+                      },
+                    ),
                     _buildNavItem(context, label: 'Profile', icon: Icons.person_outline_rounded, route: '/profile', isActive: currentRoute == '/profile'),
                   ],
                 ),

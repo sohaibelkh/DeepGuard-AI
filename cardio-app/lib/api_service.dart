@@ -289,6 +289,20 @@ class ApiService {
     }
   }
 
+  // Get Model Performance Data
+  Future<List<dynamic>?> getModelPerformance() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/models/performance'), headers: await _getHeaders());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['models'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('dg_access_token');
