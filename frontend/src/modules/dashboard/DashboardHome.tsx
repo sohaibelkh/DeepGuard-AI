@@ -21,6 +21,7 @@ import {
   XAxis,
   YAxis
 } from 'recharts';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../../lib/apiClient';
 
 interface AnalyticsSummary {
@@ -31,6 +32,7 @@ interface AnalyticsSummary {
     model_accuracy: number;
     most_frequent_condition: string;
     avg_confidence: number;
+    avg_processing_ms: number;
   };
   by_condition: { label: string; value: number }[];
   trend: { label: string; analyses: number }[];
@@ -74,6 +76,26 @@ export const DashboardHome: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+
+  const handleDownloadReport = async (recordId: number) => {
+    try {
+      // The API route is /api/report/{id}
+      const response = await apiClient.get(`/report/${recordId}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `DeepGuard_Report_${recordId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Failed to download report", err);
+      alert("Désolé, impossible de télécharger le rapport. Vérifiez votre connexion.");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -246,19 +268,22 @@ export const DashboardHome: React.FC = () => {
                 <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-[#999]">
                   Confidence
                 </th>
+                <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wide text-[#999]">
+                  Report
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e5e5] bg-white">
               {loading && (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-[#999]">
+                  <td colSpan={5} className="px-3 py-6 text-center text-[#999]">
                     Loading…
                   </td>
                 </tr>
               )}
               {!loading && (!summary?.recent || summary.recent.length === 0) && (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-[#999]">
+                  <td colSpan={5} className="px-3 py-6 text-center text-[#999]">
                     No recent analyses.
                   </td>
                 </tr>
@@ -271,13 +296,28 @@ export const DashboardHome: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 text-[11px] text-[#333] font-medium">{row.file_name}</td>
                     <td className="px-3 py-2">
-                      <span className="inline-flex rounded-full bg-[#f0f7d4] px-2 py-0.5 text-[10px] font-semibold text-[#a5c422] ring-1 ring-[#a5c422]/20">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          row.prediction === 'Normal'
+                            ? 'bg-[#eafaea] text-[#16a34a]'
+                            : 'bg-[#fef2f2] text-[#dc2626]'
+                        }`}
+                      >
                         {row.prediction}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-[11px] text-[#555]">
                       {Math.round(row.confidence * 100)}%
                     </td>
+                    <td className="px-3 py-3 text-right">
+                    <button
+                      onClick={() => handleDownloadReport(row.id)}
+                      className="inline-flex items-center gap-1 rounded bg-[#a5c422] px-2 py-1 text-[10px] font-bold text-white transition-colors hover:bg-[#8ea31d]"
+                    >
+                      <FileText className="h-3 w-3" />
+                      PDF
+                    </button>
+                  </td>
                   </tr>
                 ))}
             </tbody>

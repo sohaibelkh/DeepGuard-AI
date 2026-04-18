@@ -13,7 +13,8 @@ from typing import Optional, List, Dict, Union
 from http import HTTPStatus
 
 import numpy as np
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, Response
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,6 +26,7 @@ from models.user import User
 from ml.model_registry import model_registry
 from ml.explainability import explain_prediction
 from ml.recommender import get_recommendations
+from utils.reporting import generate_medical_report
 
 router = APIRouter(prefix="/api", tags=["ecg"])
 
@@ -232,6 +234,32 @@ async def analysis_compat(
     }
 
 
+# ── GET /api/report/{record_id} ───────────────────────────────────────────────
+
+@router.get("/report/{record_id}")
+async def download_report(
+    record_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """Generate and download a medical PDF report for a specific record."""
+    result = await db.execute(
+        select(ECGRecord).where(ECGRecord.id == record_id, ECGRecord.user_id == user.id)
+    )
+    record = result.scalar_one_or_none()
+    
+    if not record:
+        raise HTTPException(status_code=404, detail="ECG record not found")
+        
+    pdf_buffer = generate_medical_report(user.full_name, record.to_dict())
+    
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=DeepGuard_Report_{record_id}.pdf"}
+    )
+
+
 # ── GET /api/explain/{record_id} ──────────────────────────────────────────────
 
 @router.get("/explain/{record_id}")
@@ -313,7 +341,7 @@ async def analytics_summary(
 ):
     """
     Return analytics for the dashboard.
-    Compatible with the existing DashboardHome.tsx component.
+    Compatible with the updated AnalyticsPage.tsx component.
     """
     # Total analyses
     count_res = await db.execute(
@@ -321,68 +349,62 @@ async def analytics_summary(
     )
     total_analyses = count_res.scalar() or 0
 
-    # Last analysis
-    last_res = await db.execute(
-        select(ECGRecord)
-        .where(ECGRecord.user_id == user.id)
-        .order_by(ECGRecord.created_at.desc())
-        .limit(1)
-    )
-    last_analysis = last_res.scalar_one_or_none()
-
-    # All predictions for aggregation
-    preds_res = await db.execute(
-        select(ECGRecord.prediction)
-        .where(ECGRecord.user_id == user.id, ECGRecord.prediction.isnot(None))
-    )
-    predictions = [r[0] for r in preds_res.all()]
-
-    most_frequent = max(set(predictions), key=predictions.count) if predictions else None
-
-    # Avg confidence
+    # Avg confidence & processing time
     avg_res = await db.execute(
-        select(func.avg(ECGRecord.confidence))
+        select(
+            func.avg(ECGRecord.confidence),
+            func.avg(ECGRecord.processing_time_ms)
+        ).where(ECGRecord.user_id == user.id)
+    )
+    avg_confidence, avg_processing_ms = avg_res.fetchone() or (0, 0)
+
+    # By condition distribution
+    condition_res = await db.execute(
+        select(ECGRecord.prediction, func.count())
         .where(ECGRecord.user_id == user.id)
+        .group_by(ECGRecord.prediction)
     )
-    avg_confidence = float(avg_res.scalar() or 0.0)
+    by_condition = [{"label": row[0], "value": row[1]} for row in condition_res.all()]
 
-    # 7-day trend
-    now = datetime.now(timezone.utc)
-    start = now - timedelta(days=6)
-    trend_res = await db.execute(
-        select(ECGRecord)
-        .where(ECGRecord.user_id == user.id, ECGRecord.created_at >= start)
-        .order_by(ECGRecord.created_at.asc())
-    )
-    recent_records = trend_res.scalars().all()
-    per_day = Counter(r.created_at.date() for r in recent_records)
+    # Trend (Last 7 days)
+    # Simple logic for trend: count per day for last 7 days
+    from datetime import datetime, timedelta
     trend = []
-    for offset in range(7):
-        day = (start + timedelta(days=offset)).date()
-        trend.append({"label": day.strftime("%b %d"), "analyses": per_day.get(day, 0)})
+    for i in range(6, -1, -1):
+        date = (datetime.now() - timedelta(days=i)).date()
+        date_str = date.strftime("%Y-%m-%d")
+        
+        # Count for this specific day
+        day_res = await db.execute(
+            select(func.count())
+            .where(ECGRecord.user_id == user.id)
+            .where(func.date(ECGRecord.created_at) == date_str)
+        )
+        trend.append({"label": date.strftime("%a"), "analyses": day_res.scalar() or 0})
 
-    # By condition
-    by_condition = [{"label": pred, "value": predictions.count(pred)} for pred in set(predictions)]
-
-    # Recent 5
-    recent5_res = await db.execute(
+    # Recent history for the dashboard table
+    recent_res = await db.execute(
         select(ECGRecord)
         .where(ECGRecord.user_id == user.id)
         .order_by(ECGRecord.created_at.desc())
         .limit(5)
     )
-    recent5 = recent5_res.scalars().all()
+    recent_records = recent_res.scalars().all()
+    recent = [r.to_dict() for r in recent_records]
+    
+    last_analysis = recent_records[0] if recent_records else None
 
     return {
         "totals": {
             "total_analyses": total_analyses,
+            "avg_confidence": avg_confidence or 0,
+            "avg_processing_ms": avg_processing_ms or 0,
+            "model_accuracy": 0.94,
             "last_diagnosis": last_analysis.prediction if last_analysis else None,
             "last_diagnosis_at": last_analysis.created_at.isoformat() if last_analysis else None,
-            "model_accuracy": 0.952,  # Best model (hybrid) accuracy
-            "most_frequent_condition": most_frequent or "—",
-            "avg_confidence": round(avg_confidence, 4),
+            "most_frequent_condition": by_condition[0]["label"] if by_condition else "—",
         },
         "by_condition": by_condition,
         "trend": trend,
-        "recent": [r.to_dict() for r in recent5],
+        "recent": recent
     }

@@ -107,8 +107,11 @@ export const DetectionPage: React.FC = () => {
 
   const validateFile = (selected: File): string | null => {
     const ext = selected.name.toLowerCase().split('.').pop() || '';
-    if (!['csv', 'txt'].includes(ext)) {
-      return 'Unsupported format. Use .csv or .txt.';
+    if (!['csv', 'txt', 'dat', 'hea'].includes(ext)) {
+      return 'Unsupported format. Use .csv, .txt, .dat, or .hea (MIT-BIH).';
+    }
+    if (selected.size > 5 * 1024 * 1024) {
+      return 'File too large. Maximum size is 5MB.';
     }
     return null;
   };

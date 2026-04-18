@@ -12,6 +12,7 @@ import { ProfilePage } from './modules/profile/ProfilePage';
 import { ModelPerformancePage } from './modules/dashboard/ModelPerformancePage';
 import { ModelArchitecturePage } from './modules/dashboard/ModelArchitecturePage';
 import { ECGStreamPage } from './modules/ecg/ECGStreamPage';
+import { ChatPage } from './modules/chat/ChatPage';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const App: React.FC = () => {
           <Route path="/dashboard/detect" element={<DetectionPage />} />
           <Route path="/dashboard/ecg-stream" element={<ECGStreamPage />} />
           <Route path="/dashboard/history" element={<ScanHistoryPage />} />
+          <Route path="/dashboard/chat" element={<ChatPage />} />
           <Route path="/dashboard/model-performance" element={<ModelPerformancePage />} />
           <Route path="/dashboard/model-architecture" element={<ModelArchitecturePage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />

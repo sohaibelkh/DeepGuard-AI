@@ -18,17 +18,13 @@ import { apiClient } from '../../lib/apiClient';
 
 interface AnalyticsSummary {
   totals: {
-    total_scans: number;
-    image_scans: number;
-    video_scans: number;
-    fake_detections: number;
-    real_detections: number;
+    total_analyses: number;
     avg_confidence: number;
     avg_processing_ms: number;
+    model_accuracy: number;
   };
-  by_type: { type: string; scans: number }[];
-  by_prediction: { label: string; value: number }[];
-  trend: { label: string; scans: number }[];
+  by_condition: { label: string; value: number }[];
+  trend: { label: string; analyses: number }[];
 }
 
 export const AnalyticsPage: React.FC = () => {
@@ -41,6 +37,8 @@ export const AnalyticsPage: React.FC = () => {
       try {
         const res = await apiClient.get<AnalyticsSummary>('/analytics/summary');
         setSummary(res.data);
+      } catch (err) {
+        console.error("Failed to fetch analytics", err);
       } finally {
         setLoading(false);
       }
@@ -69,7 +67,7 @@ export const AnalyticsPage: React.FC = () => {
         {totals && (
           <div className="bg-white border border-[#e5e5e5] px-3 py-1.5 rounded-full shadow-sm">
              <p className="text-[11px] font-bold text-[#777]">
-              {totals.total_scans.toLocaleString()} analyses processed
+              {totals.total_analyses.toLocaleString()} analyses processed
             </p>
           </div>
         )}
@@ -82,7 +80,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
       )}
 
-      {!loading && (
+      {!loading && summary && (
         <>
           <section className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)]">
             <div className="card p-5 space-y-4">
@@ -98,7 +96,7 @@ export const AnalyticsPage: React.FC = () => {
               <div className="h-64 bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={summary?.trend ?? []}
+                    data={summary.trend}
                     margin={{ left: -20, right: 10, top: 10, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
@@ -114,7 +112,7 @@ export const AnalyticsPage: React.FC = () => {
                     />
                     <Line
                       type="monotone"
-                      dataKey="scans"
+                      dataKey="analyses"
                       stroke="#a5c422"
                       strokeWidth={3}
                       dot={{ r: 4, fill: '#a5c422', strokeWidth: 2, stroke: '#fff' }}
@@ -131,28 +129,31 @@ export const AnalyticsPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-[#a5c422]" />
                     <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
-                      Diagnosis Summary
+                      Condition Distribution
                     </p>
                   </div>
                 </header>
-                <div className="h-44">
+                <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={summary?.by_prediction ?? []}
+                        data={summary.by_condition}
                         dataKey="value"
                         nameKey="label"
-                        innerRadius={45}
-                        outerRadius={75}
+                        innerRadius={60}
+                        outerRadius={90}
                         paddingAngle={4}
                         stroke="none"
                       >
-                        {(summary?.by_prediction ?? []).map((entry, i) => (
-                          <Cell
-                            key={entry.label}
-                            fill={i === 0 ? '#a5c422' : '#f97316'}
-                          />
-                        ))}
+                        {summary.by_condition.map((entry, i) => {
+                          const COLORS = ['#a5c422', '#f97316', '#0284c7', '#ef4444', '#8b5cf6', '#ec4899'];
+                          return (
+                            <Cell
+                              key={entry.label}
+                              fill={COLORS[i % COLORS.length]}
+                            />
+                          );
+                        })}
                       </Pie>
                       <Tooltip
                         contentStyle={{
@@ -166,38 +167,21 @@ export const AnalyticsPage: React.FC = () => {
                   </ResponsiveContainer>
                 </div>
               </div>
+            </div>
+          </section>
 
-              <div className="card p-5 space-y-4">
-                <header className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-[#a5c422]" />
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#555]">
-                       Traffic By Modality
-                    </p>
-                  </div>
-                </header>
-                <div className="h-36 bg-[#fcfcfc] border border-[#f0f0f0] rounded-xl overflow-hidden p-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={summary?.by_type ?? []}
-                      margin={{ left: -20, right: 10, top: 0, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} />
-                      <XAxis dataKey="type" stroke="#999" fontSize={11} />
-                      <YAxis stroke="#999" fontSize={11} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#ffffff',
-                          borderColor: '#e5e5e5',
-                          borderRadius: 8
-                        }}
-                        labelStyle={{ fontSize: 11, color: '#333' }}
-                      />
-                      <Bar dataKey="scans" radius={[6, 6, 0, 0]} fill="#a5c422" barSize={32} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+          <section className="grid gap-4 md:grid-cols-3">
+            <div className="card p-5 text-center space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#999]">Average Confidence</p>
+              <p className="text-3xl font-black text-[#333]">{Math.round(totals?.avg_confidence! * 100)}%</p>
+            </div>
+            <div className="card p-5 text-center space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#999]">Processing Time</p>
+              <p className="text-3xl font-black text-[#333]">{Math.round(totals?.avg_processing_ms!)}ms</p>
+            </div>
+            <div className="card p-5 text-center space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#999]">Model Accuracy</p>
+              <p className="text-3xl font-black text-[#333]">{Math.round(totals?.model_accuracy! * 100)}%</p>
             </div>
           </section>
         </>

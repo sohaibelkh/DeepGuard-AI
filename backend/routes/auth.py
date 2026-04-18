@@ -5,7 +5,7 @@ Maintains the same API contract the React frontend expects.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth import create_access_token, create_refresh_token, decode_token, get_current_user
 from database import get_db
 from models.user import User
+
+# Add Rate Limiting
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -43,7 +49,8 @@ class AuthResponse(BaseModel):
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthResponse)
-async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def register(request: Request, body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Register a new user account."""
     full_name = body.full_name.strip()
     email = body.email.strip().lower()
@@ -70,7 +77,8 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=AuthResponse)
-async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, body: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Authenticate with email + password."""
     identifier = body.identifier.strip().lower()
     password = body.password

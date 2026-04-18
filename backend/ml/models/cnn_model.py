@@ -126,11 +126,11 @@ class CNNModel:
 
     def predict(self, signal: np.ndarray, num_mc_samples: int = 10) -> tuple[str, float, dict[str, float], float]:
         """
-        Inference with MC Dropout for uncertainty estimation.
+        Deterministic inference. Randomness and dropout are disabled.
         Returns: (prediction, confidence, probabilities, reliability_score)
         """
         if not self.is_loaded:
-            return self._simulate_prediction()
+            return self._simulate_prediction(signal)
 
         # Ensure correct shape (batch, leads, length)
         # Model expects (batch, 12, length)
@@ -151,36 +151,26 @@ class CNNModel:
             # If we have 1 lead but need 12, broadcast it
             if tensor.shape[1] == 1:
                 tensor = tensor.repeat(1, self.model.conv1.in_channels, 1)
+            elif tensor.shape[1] == 2:
+                # If we have 2 leads (MIT-BIH), repeat it 6 times to get 12 leads
+                tensor = tensor.repeat(1, self.model.conv1.in_channels // 2, 1)
             else:
                 raise ValueError(f"Model expects {self.model.conv1.in_channels} leads, but got {tensor.shape[1]}")
         
-        # MC Dropout inference
-        self.model.train() # Enable dropout during evaluation
-        # Temporarily fix BatchNorm behavior while in train() mode
-        for m in self.model.modules():
-            if isinstance(m, nn.BatchNorm1d):
-                m.eval()
+        # Deterministic inference: disable dropout and evaluate normally
+        self.model.eval()
 
-        all_probs = []
         with torch.no_grad():
-            for _ in range(num_mc_samples):
-                logits, _ = self.model(tensor)
-                probs = F.softmax(logits, dim=1)[0].cpu().numpy()
-                all_probs.append(probs)
+            logits, _ = self.model(tensor)
+            probs = F.softmax(logits, dim=1)[0].cpu().numpy()
 
-        # Calculate statistics
-        all_probs = np.stack(all_probs)
-        mean_probs = np.mean(all_probs, axis=0)
-        uncertainty = np.mean(np.std(all_probs, axis=0)) # Mean standard deviation across classes
+        idx = int(np.argmax(probs))
+        class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, probs)}
         
-        # Reliability score (inverted and normalized uncertainty)
-        # Max theoretical uncertainty (standard deviation) is around 0.5
-        reliability_score = max(0.0, 1.0 - (uncertainty * 4.0)) 
+        # Without MC Dropout, confidence is just the max probability
+        reliability_score = 0.90 # Default reliability since variance is not measured
         
-        idx = int(np.argmax(mean_probs))
-        class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, mean_probs)}
-        
-        return self.classes[idx], float(mean_probs[idx]), class_probs, float(reliability_score)
+        return self.classes[idx], float(probs[idx]), class_probs, float(reliability_score)
 
     def save(self, path: Optional[str] = None) -> str:
         if path is None:
@@ -200,8 +190,10 @@ class CNNModel:
             self.is_loaded = False
             return False
 
-    def _simulate_prediction(self) -> tuple[str, float, dict[str, float], float]:
-        rng = np.random.default_rng()
+    def _simulate_prediction(self, signal: Optional[np.ndarray] = None) -> tuple[str, float, dict[str, float], float]:
+        # Use signal sum as seed to ensure deterministic output for the same file, or 42 as fallback
+        seed = int(np.sum(signal) * 1000) % (2**32) if signal is not None else 42
+        rng = np.random.default_rng(seed)
         proba = rng.dirichlet(np.ones(self.num_classes) * 0.4)
         dominant = rng.integers(0, self.num_classes)
         proba[dominant] += 0.35

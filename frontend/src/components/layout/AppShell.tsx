@@ -10,7 +10,8 @@ import {
   User,
   X,
   LineChart,
-  Cpu
+  Cpu,
+  MessageSquare
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../modules/auth/AuthContext';
@@ -29,6 +30,7 @@ const navItems: NavItem[] = [
   { label: 'ECG Diagnosis', to: '/dashboard/detect', icon: Activity },
   { label: 'Live ECG', to: '/dashboard/ecg-stream', icon: Radio },
   { label: 'History', to: '/dashboard/history', icon: History },
+  { label: 'AI Assistant', to: '/dashboard/chat', icon: MessageSquare },
   { label: 'Model performance', to: '/dashboard/model-performance', icon: LineChart },
   { label: 'Model architecture', to: '/dashboard/model-architecture', icon: Cpu },
   { label: 'Profile', to: '/dashboard/profile', icon: User }

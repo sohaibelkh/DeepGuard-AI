@@ -98,6 +98,25 @@ export const ScanHistoryPage: React.FC = () => {
     }
   };
 
+  const handleDownloadReport = async (recordId: number) => {
+    try {
+      const response = await apiClient.get(`/report/${recordId}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `DeepGuard_Report_${recordId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Failed to download report", err);
+      alert("Désolé, impossible de télécharger le rapport. Vérifiez votre connexion.");
+    }
+  };
+
   const sortedRows = useMemo(() => {
     const copy = [...rows];
     copy.sort((a, b) => {
@@ -246,13 +265,16 @@ export const ScanHistoryPage: React.FC = () => {
                     )}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-[#999]">
+                  Report
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e5e5] bg-white">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-8 text-center text-xs text-[#999]"
                   >
                     <div className="flex items-center justify-center gap-2">
@@ -264,7 +286,7 @@ export const ScanHistoryPage: React.FC = () => {
               ) : sortedRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-8 text-center text-xs text-[#999]"
                   >
                     No analyses match the current filters.
@@ -298,6 +320,15 @@ export const ScanHistoryPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 align-middle text-[11px] font-bold text-[#333]">
                         {confidencePct}%
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => handleDownloadReport(row.id)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-[#a5c422] px-3 py-1.5 text-[10px] font-bold text-white transition-colors hover:bg-[#8ea31d]"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          PDF
+                        </button>
                       </td>
                     </tr>
                   );

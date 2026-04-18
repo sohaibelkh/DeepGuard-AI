@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     # ── ML Models ─────────────────────────────────────────────────────────
     MODEL_WEIGHTS_DIR: str = str(BASE_DIR / "ml" / "weights")
-    DEFAULT_MODEL: str = "hybrid_cnn_lstm"
+    DEFAULT_MODEL: str = "cnn"
 
     # ── Upload ────────────────────────────────────────────────────────────
     MAX_UPLOAD_SIZE_MB: int = 500
@@ -46,6 +46,13 @@ class Settings(BaseSettings):
         "Tachycardia",
         "Bradycardia",
     ]
+
+    # ── Chatbot ──────────────────────────────────────────────────────────
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.3-70b-versatile" # Updated to a modern supported Groq model
+    VECTOR_DB_DIR: str = str(BASE_DIR / "dbVector")
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
 
     class Config:
         env_file = ".env"

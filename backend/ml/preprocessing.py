@@ -62,6 +62,22 @@ def normalize(ecg_signal: np.ndarray) -> np.ndarray:
     return ((ecg_signal - mean) / std).astype(np.float32)
 
 
+def resample_signal(ecg_signal: np.ndarray, current_fs: int, target_fs: int) -> np.ndarray:
+    """Resample signal from current_fs to target_fs using scipy.signal.resample."""
+    if current_fs == target_fs:
+        return ecg_signal
+    
+    # Handle multi-lead (leads, samples)
+    if ecg_signal.ndim == 2:
+        num_samples = int(ecg_signal.shape[1] * target_fs / current_fs)
+        resampled = sp_signal.resample(ecg_signal, num_samples, axis=1)
+    else:
+        num_samples = int(len(ecg_signal) * target_fs / current_fs)
+        resampled = sp_signal.resample(ecg_signal, num_samples)
+        
+    return resampled.astype(np.float32)
+
+
 def segment_signal(
     ecg_signal: np.ndarray,
     segment_length: Optional[int] = None,
