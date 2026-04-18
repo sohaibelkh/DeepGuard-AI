@@ -179,6 +179,43 @@ class ApiService {
     }
   }
 
+  String get wsBaseUrl {
+    final base = baseUrl;
+    if (base.startsWith('https')) {
+      return base.replaceFirst('https', 'wss');
+    } else {
+      return base.replaceFirst('http', 'ws');
+    }
+  }
+
+  // Fetch History for Stream Selection
+  Future<List<dynamic>?> fetchHistoryRecords() async {
+     try {
+       final response = await http.get(
+        Uri.parse('$baseUrl/history/analyses?page_size=50'),
+         headers: await _getHeaders(),
+       );
+       if (response.statusCode == 200) {
+         final body = jsonDecode(response.body);
+         final items = body['items'] as List<dynamic>? ?? [];
+         
+         final uniqueItems = <dynamic>[];
+         final seenFiles = <String>{};
+         for (var item in items) {
+           final fName = item['file_name']?.toString() ?? '';
+           if (!seenFiles.contains(fName)) {
+              seenFiles.add(fName);
+              uniqueItems.add(item);
+           }
+         }
+         return uniqueItems;
+       }
+       return null;
+     } catch (e) {
+       return null;
+     }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('dg_access_token');

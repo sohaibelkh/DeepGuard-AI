@@ -3,6 +3,9 @@ import '../api_service.dart';
 import '../screens/login_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/ecg_diagnosis_screen.dart';
+import '../screens/live_ecg_screen.dart';
+
+
 
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
@@ -178,7 +181,22 @@ class AppDrawer extends StatelessWidget {
                         }
                       },
                     ),
-                    _buildNavItem(context, label: 'Live ECG', icon: Icons.sensors_rounded, route: '/live-ecg', isActive: currentRoute == '/live-ecg'),
+                    _buildNavItem(
+                      context,
+                      label: 'Live ECG',
+                      icon: Icons.sensors_rounded,
+                      route: '/live-ecg',
+                      isActive: currentRoute == '/live-ecg',
+                      onTap: () {
+                        if (currentRoute != '/live-ecg') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LiveEcgScreen()),
+                          );
+                        }
+                      },
+                    ),
                     _buildNavItem(context, label: 'History', icon: Icons.history_rounded, route: '/history', isActive: currentRoute == '/history'),
                     _buildNavItem(context, label: 'AI Assistant', icon: Icons.chat_bubble_outline_rounded, route: '/chat', isActive: currentRoute == '/chat'),
                     _buildNavItem(context, label: 'Model Performance', icon: Icons.insights_rounded, route: '/performance', isActive: currentRoute == '/performance'),
