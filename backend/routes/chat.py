@@ -28,6 +28,7 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 class ChatRequest(BaseModel):
     question: str
+    language: str = "auto"  # "en" | "fr" | "ar" | "auto"
 
 class ChatResponse(BaseModel):
     answer: str
@@ -109,22 +110,39 @@ def get_llm():
 async def chat(request: ChatRequest, user: User = Depends(get_current_user)):
     """Interact with the chatbot."""
     question = request.question.strip()
+    language = request.language.strip().lower() if request.language else "auto"
     if not question:
-        raise HTTPException(status_code=400, detail="Veuillez entrer une question.")
+        raise HTTPException(status_code=400, detail="Please enter a question.")
+    
+    # Build language instruction
+    lang_map = {
+        "en": "You MUST respond in English only, regardless of the language of the context.",
+        "fr": "Tu DOIS répondre en français uniquement, quelle que soit la langue du contexte.",
+        "ar": "يجب أن تجيب باللغة العربية فقط، بغض النظر عن لغة السياق. استخدم اتجاه النص من اليمين لليسار.",
+        "auto": "Detect the language of the user's question and respond in THAT SAME language. If the question is in French, respond in French. If in Arabic, respond in Arabic. If in English, respond in English.",
+    }
+    language_instruction = lang_map.get(language, lang_map["auto"])
     
     try:
         db = get_vector_db()
         
-        # Search for relevant context
-        docs = db.similarity_search(question, k=3)
+        # Search for relevant context from DeepGuard knowledge base
+        docs = db.similarity_search(question, k=4)
         context = "\n\n".join([doc.page_content for doc in docs])
         
-        # Prompt construction
+        # Multilingual prompt
         prompt = (
-            f"Repondez à cette question : {question}\n\n"
-            f"En se basant sur le contexte suivant issu du guide de création d'entreprise :\n"
-            f"{context}\n\n"
-            f"Si la réponse n'est pas dans le contexte, dites-le poliment."
+            f"You are DeepGuard AI Assistant, a specialized medical AI assistant for the DeepGuard-AI cardiac ECG analysis platform.\n"
+            f"Your role is to help users understand their ECG results, cardiac conditions, and how to use the platform.\n\n"
+            f"LANGUAGE RULE: {language_instruction}\n\n"
+            f"Use the following context from the DeepGuard platform knowledge base to answer the question:\n"
+            f"---\n{context}\n---\n\n"
+            f"User question: {question}\n\n"
+            f"Instructions:\n"
+            f"- Answer based on the context provided above.\n"
+            f"- If the answer is not in the context, say so politely and suggest consulting a cardiologist.\n"
+            f"- Never provide a final medical diagnosis. Always recommend professional consultation for serious conditions.\n"
+            f"- Be concise, clear, and professional."
         )
         
         response = get_llm().invoke(prompt)
