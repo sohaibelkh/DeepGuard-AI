@@ -267,6 +267,28 @@ class ApiService {
     }
   }
 
+  // Submit query to Chatbot
+  Future<String?> sendChatMessage({required String question, String language = 'en'}) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/chat/'),
+        headers: await _getHeaders(),
+        body: jsonEncode({
+          'question': question,
+          'language': language,
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['answer'];
+      }
+      return 'Error: Received status code ${response.statusCode} from the server.';
+    } catch (e) {
+      return 'Error: Could not connect to the chat server. Ensure the backend is active.';
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('dg_access_token');

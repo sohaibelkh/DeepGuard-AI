@@ -5,6 +5,7 @@ import '../screens/dashboard_screen.dart';
 import '../screens/ecg_diagnosis_screen.dart';
 import '../screens/live_ecg_screen.dart';
 import '../screens/history_screen.dart';
+import '../screens/chat_screen.dart';
 
 
 
@@ -214,7 +215,22 @@ class AppDrawer extends StatelessWidget {
                         }
                       },
                     ),
-                    _buildNavItem(context, label: 'AI Assistant', icon: Icons.chat_bubble_outline_rounded, route: '/chat', isActive: currentRoute == '/chat'),
+                    _buildNavItem(
+                      context,
+                      label: 'AI Assistant',
+                      icon: Icons.chat_bubble_outline_rounded,
+                      route: '/chat',
+                      isActive: currentRoute == '/chat',
+                      onTap: () {
+                        if (currentRoute != '/chat') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ChatScreen()),
+                          );
+                        }
+                      },
+                    ),
                     _buildNavItem(context, label: 'Model Performance', icon: Icons.insights_rounded, route: '/performance', isActive: currentRoute == '/performance'),
                     _buildNavItem(context, label: 'Profile', icon: Icons.person_outline_rounded, route: '/profile', isActive: currentRoute == '/profile'),
                   ],
