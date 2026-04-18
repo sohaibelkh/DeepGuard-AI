@@ -7,6 +7,7 @@ import '../screens/live_ecg_screen.dart';
 import '../screens/history_screen.dart';
 import '../screens/chat_screen.dart';
 import '../screens/performance_screen.dart';
+import '../screens/profile_screen.dart';
 
 
 
@@ -248,7 +249,22 @@ class AppDrawer extends StatelessWidget {
                         }
                       },
                     ),
-                    _buildNavItem(context, label: 'Profile', icon: Icons.person_outline_rounded, route: '/profile', isActive: currentRoute == '/profile'),
+                    _buildNavItem(
+                      context,
+                      label: 'Profile',
+                      icon: Icons.person_outline_rounded,
+                      route: '/profile',
+                      isActive: currentRoute == '/profile',
+                      onTap: () {
+                        if (currentRoute != '/profile') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ProfileScreen()),
+                          );
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),

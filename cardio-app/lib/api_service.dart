@@ -303,6 +303,44 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>?> getProfile() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/auth/me'), headers: await _getHeaders());
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body)['user'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> updateProfile(String fullName, String email) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/auth/profile'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'full_name': fullName, 'email': email}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/change-password'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'current_password': currentPassword, 'new_password': newPassword}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('dg_access_token');

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import '../api_service.dart';
 import '../widgets/app_drawer.dart';
@@ -265,7 +264,6 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
        final metric = metrics[i];
        
        List<BarChartRodData> rods = [];
-       double rodOffset = 0;
        
        for (int j = 0; j < _models.length; j++) {
           final m = _models[j];

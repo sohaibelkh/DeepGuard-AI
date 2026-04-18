@@ -46,6 +46,16 @@ class AuthResponse(BaseModel):
     refresh_token: str
 
 
+class ProfileUpdateRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=AuthResponse)
@@ -118,3 +128,29 @@ async def refresh(body: RefreshRequest, db: AsyncSession = Depends(get_db)):
 async def me(user: User = Depends(get_current_user)):
     """Return the authenticated user's profile."""
     return {"user": user.to_safe_dict()}
+
+
+@router.put("/profile")
+async def update_profile(body: ProfileUpdateRequest, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Update user's name and email."""
+    if body.email != user.email:
+        existing = await db.execute(select(User).where(User.email == body.email))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="A user with this email already exists")
+    
+    user.full_name = body.full_name
+    user.email = body.email
+    await db.commit()
+    await db.refresh(user)
+    return {"user": user.to_safe_dict()}
+
+
+@router.post("/change-password")
+async def change_password(body: ChangePasswordRequest, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Update user's password."""
+    if not user.check_password(body.current_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    user.set_password(body.new_password)
+    await db.commit()
+    return {"detail": "Password updated successfully"}

@@ -40,7 +40,7 @@ export const ProfilePage: React.FC = () => {
 
     setProfileSubmitting(true);
     try {
-      const res = await apiClient.put<{ user: AuthUser }>('/profile', {
+      const res = await apiClient.put<{ user: AuthUser }>('/auth/profile', {
         full_name: fullName.trim(),
         email: email.trim()
       });
