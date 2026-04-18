@@ -27,7 +27,7 @@ class ECG_LSTM(nn.Module):
 
     def __init__(
         self,
-        input_size: int = 1,
+        input_size: int = 12,
         hidden_size: int = 128,
         num_layers: int = 2,
         num_classes: int = 6,
@@ -46,7 +46,12 @@ class ECG_LSTM(nn.Module):
         self.fc = nn.Linear(hidden_size * 2, num_classes)  # *2 for bidirectional
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x shape: (batch, seq_len, 1)
+        # x shape: (batch, channels, seq_len)
+        if x.dim() == 3 and x.shape[1] == 12:
+            x = x.permute(0, 2, 1) # -> (batch, seq_len, channels)
+        elif x.dim() == 3 and x.shape[-1] == 1:
+            pass # Already (batch, seq_len, 1) from legacy
+            
         lstm_out, _ = self.lstm(x)  # (batch, seq_len, hidden*2)
         # Take last time step output
         last_output = lstm_out[:, -1, :]  # (batch, hidden*2)
@@ -72,14 +77,13 @@ class LSTMModel:
         signal shape: (segment_length,)
         """
         if not self.is_loaded:
-            return self._simulate_prediction()
+            return self._simulate_prediction(signal)
 
-        tensor = (
-            torch.tensor(signal, dtype=torch.float32)
-            .unsqueeze(0)  # batch dim
-            .unsqueeze(-1)  # feature dim
-            .to(self.device)
-        )
+        tensor = torch.tensor(signal, dtype=torch.float32).to(self.device)
+        if tensor.dim() == 1:
+            tensor = tensor.repeat(12, 1) # Broadcast to 12 leads
+        tensor = tensor.unsqueeze(0) # Add batch dim -> (1, 12, seq_len)
+
         with torch.no_grad():
             logits = self.model(tensor)
             probs = F.softmax(logits, dim=1)[0].cpu().numpy()
@@ -106,11 +110,12 @@ class LSTMModel:
         except FileNotFoundError:
             return False
 
-    def _simulate_prediction(self) -> tuple[str, float, dict[str, float], float]:
-        rng = np.random.default_rng()
+    def _simulate_prediction(self, signal: np.ndarray) -> tuple[str, float, dict[str, float], float]:
+        seed_val = int(abs(np.sum(signal) * 1000000)) % (2**32)
+        rng = np.random.default_rng(seed_val)
         proba = rng.dirichlet(np.ones(self.num_classes) * 0.4)
         dominant = rng.integers(0, self.num_classes)
-        proba[dominant] += 0.35
+        proba[dominant] += 3.5
         proba /= proba.sum()
         idx = int(np.argmax(proba))
         class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, proba)}

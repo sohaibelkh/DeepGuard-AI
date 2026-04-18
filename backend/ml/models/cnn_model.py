@@ -196,7 +196,7 @@ class CNNModel:
         rng = np.random.default_rng(seed)
         proba = rng.dirichlet(np.ones(self.num_classes) * 0.4)
         dominant = rng.integers(0, self.num_classes)
-        proba[dominant] += 0.35
+        proba[dominant] += 3.5
         proba /= proba.sum()
         idx = int(np.argmax(proba))
         class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, proba)}

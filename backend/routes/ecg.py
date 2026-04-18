@@ -34,20 +34,54 @@ ALLOWED_EXTENSIONS = {".csv", ".txt"}
 
 
 def _parse_ecg_file(content: str) -> list[float]:
-    """Parse ECG file content (CSV/TXT) into a list of float values."""
-    values: list[float] = []
+    """
+    Parse ECG file content (CSV/TXT) into a flat list of float values.
+
+    Supports two formats:
+    - Single-column: one sample per line  → 1D signal (will be broadcast to 12 leads)
+    - Multi-column : N columns per line   → N-lead signal stored row-major
+      e.g. 12-column CSV → shape (n_samples, 12) → stored as flat list with
+      a sentinel header: first value = -999.0 (marker), second = n_cols, then data.
+    """
+    rows: list[list[float]] = []
     lines = content.strip().split("\n")
+
     for line in lines:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        parts = line.replace(",", " ").replace(";", " ").replace("\t", " ").split()
+        # Try comma, semicolon, tab, space as separators
+        sep_line = line.replace(";", ",").replace("\t", ",")
+        if "," in sep_line:
+            parts = sep_line.split(",")
+        else:
+            parts = sep_line.split()
+
+        row: list[float] = []
         for part in parts:
             try:
-                values.append(float(part))
+                row.append(float(part.strip()))
             except ValueError:
                 continue
-    return values
+        if row:
+            rows.append(row)
+
+    if not rows:
+        return []
+
+    # Check if all rows have the same number of columns > 1 (multi-lead)
+    col_counts = set(len(r) for r in rows)
+    n_cols = len(rows[0])
+
+    if len(col_counts) == 1 and n_cols > 1:
+        # Multi-lead CSV: encode as [-999.0, n_cols, data...]
+        flat: list[float] = [-999.0, float(n_cols)]
+        for row in rows:
+            flat.extend(row)
+        return flat
+    else:
+        # Single-column or mixed: flatten everything
+        return [v for row in rows for v in row]
 
 
 # ── POST /api/upload-ecg ──────────────────────────────────────────────────────

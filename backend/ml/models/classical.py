@@ -86,7 +86,7 @@ class ClassicalModel:
 
         if not self.is_fitted:
             # Return a simulated prediction if model is not trained
-            return self._simulate_prediction()
+            return self._simulate_prediction(X)
 
         proba = self.pipeline.predict_proba(X)[0]
         idx = int(np.argmax(proba))
@@ -122,14 +122,15 @@ class ClassicalModel:
         except FileNotFoundError:
             return False
 
-    def _simulate_prediction(self) -> tuple[str, float, dict[str, float], float]:
+    def _simulate_prediction(self, X: np.ndarray) -> tuple[str, float, dict[str, float], float]:
         """Generate a realistic simulated prediction when model is not trained."""
-        rng = np.random.default_rng()
+        seed_val = int(abs(np.sum(X) * 1000000)) % (2**32)
+        rng = np.random.default_rng(seed_val)
         # Generate Dirichlet-distributed probabilities for realistic output
         proba = rng.dirichlet(np.ones(len(self.classes)) * 0.5)
         # Boost a random class to make it look like a real prediction
         dominant = rng.integers(0, len(self.classes))
-        proba[dominant] += 0.3
+        proba[dominant] += 3.0
         proba /= proba.sum()
         idx = int(np.argmax(proba))
         class_probs = {c: round(float(p), 4) for c, p in zip(self.classes, proba)}

@@ -129,6 +129,10 @@ def extract_features(
     Extract all features from a single ECG segment.
     Returns a 1-D feature vector (NumPy array) of ~20 features.
     """
+    if ecg_segment.ndim > 1:
+        # For multi-lead signals, extract features from Lead I
+        ecg_segment = ecg_segment[0]
+        
     features = {}
     features.update(compute_time_domain_features(ecg_segment))
     features.update(compute_rr_features(ecg_segment, fs))

@@ -173,6 +173,14 @@ def explain_prediction(
     """
     Route to the appropriate explanation method based on model type.
     """
+    # Detect and decode multi-lead sentinel encoding
+    if len(signal) > 2 and signal[0] == -999.0:
+        n_cols = int(signal[1])
+        data = signal[2:]
+        n_samples = len(data) // n_cols
+        matrix = np.array(data[: n_samples * n_cols]).reshape(n_samples, n_cols).T
+        signal = matrix  # shape: (leads, samples)
+
     classical_models = {"svm", "random_forest", "knn"}
     if model_name in classical_models:
         return explain_classical_prediction(signal, model_name)

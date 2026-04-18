@@ -27,7 +27,8 @@ from tqdm import tqdm
 
 from config import settings
 from ml.preprocessing import preprocess_ecg, resample_signal
-from ml.models.cnn_model import CNNModel
+from ml.feature_engineering import extract_features
+from ml.model_registry import model_registry
 
 # Define paths (relative to backend root)
 DATA_DIR = Path("data/ptbxl")
@@ -287,39 +288,7 @@ class MITBIHDataset(Dataset):
             
         return torch.tensor(full_signal, dtype=torch.float32), torch.tensor(label_idx, dtype=torch.long)
 
-def train(epochs=100, batch_size=64, lr=0.001, use_mitbih=False):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Training on {device}")
-    
-    # PTB-XL
-    df = load_dataset()
-    train_df = df[df.strat_fold <= 8]
-    val_df = df[df.strat_fold == 9]
-    
-    train_ds = [PTBXLDataset(train_df, DATA_DIR, transform=True)]
-    val_ds = [PTBXLDataset(val_df, DATA_DIR, transform=False)]
-    
-    # MIT-BIH (Optional)
-    if use_mitbih and MITBIH_DIR.exists():
-        mit_ds = MITBIHDataset(MITBIH_DIR, transform=True)
-        # Split MIT-BIH 80/20
-        mit_len = len(mit_ds)
-        mit_train_len = int(0.8 * mit_len)
-        mit_val_len = mit_len - mit_train_len
-        mit_train, mit_val = torch.utils.data.random_split(mit_ds, [mit_train_len, mit_val_len])
-        train_ds.append(mit_train)
-        val_ds.append(mit_val)
-    
-    # Combine datasets
-    full_train_ds = torch.utils.data.ConcatDataset(train_ds)
-    full_val_ds = torch.utils.data.ConcatDataset(val_ds)
-    
-    train_loader = DataLoader(full_train_ds, batch_size=batch_size, shuffle=True, num_workers=2 if os.name != 'nt' else 0)
-    val_loader = DataLoader(full_val_ds, batch_size=batch_size, shuffle=False)
-    
-    print(f"Dataset sizes: Train={len(full_train_ds)}, Val={len(full_val_ds)}")
-    
-    model_wrapper = CNNModel()
+def train_dl_model(model_wrapper, train_loader, val_loader, full_val_ds, epochs, lr, device):
     model = model_wrapper.model
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = torch.nn.CrossEntropyLoss()
@@ -332,30 +301,107 @@ def train(epochs=100, batch_size=64, lr=0.001, use_mitbih=False):
             signals, labels = signals.to(device), labels.to(device)
             
             optimizer.zero_grad()
-            logits, _ = model(signals)
+            logits, _ = model(signals) if model_wrapper.model_name == 'cnn' else (model(signals), None)
+            
+            if isinstance(logits, tuple):
+                logits = logits[0]
+                
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             
             train_loss += loss.item()
             
-        # Validation
         model.eval()
         val_correct = 0
         with torch.no_grad():
             for signals, labels in val_loader:
                 signals, labels = signals.to(device), labels.to(device)
-                logits, _ = model(signals)
+                out = model(signals)
+                logits = out[0] if isinstance(out, tuple) else out
                 preds = torch.argmax(logits, dim=1)
                 val_correct += (preds == labels).sum().item()
         
         val_acc = val_correct / len(full_val_ds)
-        print(f"Epoch {epoch+1}: Loss={train_loss/len(train_loader):.4f}, Val Acc={val_acc:.4f}")
+        print(f"[{model_wrapper.model_name}] Epoch {epoch+1}: Loss={train_loss/len(train_loader):.4f}, Val Acc={val_acc:.4f}")
         
-        if val_acc > best_acc:
+        if val_acc >= best_acc:
             best_acc = val_acc
             model_wrapper.save()
-            print(f"Model saved with Accuracy: {val_acc:.4f}")
+            print(f"[{model_wrapper.model_name}] Model saved with Accuracy: {val_acc:.4f}")
+
+def train_classical_model(model_wrapper, full_train_ds, full_val_ds):
+    print(f"[{model_wrapper.model_name}] Extracting 1D features for Classical Model...")
+    X_train, y_train = [], []
+    for sig, lbl in tqdm(full_train_ds, desc="Extracting Train Features"):
+        feat = extract_features(sig.numpy())
+        X_train.append(feat)
+        y_train.append(lbl.item())
+        
+    X_val, y_val = [], []
+    for sig, lbl in tqdm(full_val_ds, desc="Extracting Val Features"):
+        feat = extract_features(sig.numpy())
+        X_val.append(feat)
+        y_val.append(lbl.item())
+        
+    X_train, y_train = np.array(X_train), np.array(y_train)
+    X_val, y_val = np.array(X_val), np.array(y_val)
+    
+    print(f"[{model_wrapper.model_name}] Training Pipeline.fit()...")
+    model_wrapper.train(X_train, y_train)
+    
+    # Validation
+    preds = model_wrapper.pipeline.predict(X_val)
+    val_acc = np.mean(preds == y_val)
+    print(f"[{model_wrapper.model_name}] Validation Accuracy: {val_acc:.4f}")
+    
+    model_wrapper.save()
+    print(f"[{model_wrapper.model_name}] Model saved to disk.")
+
+
+def train(epochs=100, batch_size=64, lr=0.001, use_mitbih=False, run_models=["cnn"]):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"System: {device}")
+    
+    # PTB-XL
+    df = load_dataset()
+    train_df = df[df.strat_fold <= 8]
+    val_df = df[df.strat_fold == 9]
+    
+    train_ds = [PTBXLDataset(train_df, DATA_DIR, transform=True)]
+    val_ds = [PTBXLDataset(val_df, DATA_DIR, transform=False)]
+    
+    # Combine datasets
+    full_train_ds = torch.utils.data.ConcatDataset(train_ds)
+    full_val_ds = torch.utils.data.ConcatDataset(val_ds)
+    
+    train_loader = DataLoader(full_train_ds, batch_size=batch_size, shuffle=True, num_workers=2 if os.name != 'nt' else 0)
+    val_loader = DataLoader(full_val_ds, batch_size=batch_size, shuffle=False)
+    
+    print(f"Dataset sizes: Train={len(full_train_ds)}, Val={len(full_val_ds)}")
+    
+    if "all" in run_models:
+        run_models = list(model_registry.models.keys())
+        
+    for m_name in run_models:
+        print(f"\n{'='*50}\nStarting Training for {m_name.upper()}\n{'='*50}")
+        if m_name not in model_registry.models:
+            print(f"Unknown model {m_name}")
+            continue
+            
+        model_wrapper = model_registry.get_model(m_name)
+        
+        # Check if the model is already trained and saved on disk
+        if model_wrapper.load():
+            print(f"[{m_name}] Weights already exist on disk! Skipping training to save time.")
+            continue
+            
+        # Classical vs DL
+        if hasattr(model_wrapper, 'pipeline'):
+            train_classical_model(model_wrapper, full_train_ds, full_val_ds)
+        else:
+            model_wrapper.model_name = m_name
+            train_dl_model(model_wrapper, train_loader, val_loader, full_val_ds, epochs, lr, device)
 
 if __name__ == "__main__":
     import argparse
@@ -364,10 +410,11 @@ if __name__ == "__main__":
     parser.add_argument("--mitbih", action="store_true", help="Include MIT-BIH dataset for training")
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--model", type=str, default="cnn", help="cnn, lstm, hybrid_cnn_lstm, svm, random_forest, knn, all")
     args = parser.parse_args()
 
     download_ptbxl(fast_mode=args.fast)
     if METADATA_FILE.exists():
-        train(epochs=args.epochs, use_mitbih=args.mitbih)
+        train(epochs=args.epochs, use_mitbih=args.mitbih, run_models=[args.model])
     else:
         print("Training skipped: PTB-XL metadata not found.")
