@@ -31,17 +31,17 @@ async def lifespan(app: FastAPI):
     """Startup / shutdown events."""
     # ── Startup ───────────────────────────────────────────────────────────
     await create_tables()
-    print("✓ Database tables created")
+    print("[OK] Database tables created")
     
     # Initialize Vector DB for Chatbot (PDF processing)
     try:
         get_vector_db()
-        print("✓ Vector DB initialized for AI Assistant")
+        print("[OK] Vector DB initialized for AI Assistant")
     except Exception as e:
-        print(f"⚠ Warning: Could not initialize Vector DB: {e}")
+        print(f"[WARN] Could not initialize Vector DB: {e}")
         
-    print(f"✓ Default model: {settings.DEFAULT_MODEL}")
-    print("✓ ECG Cardiac AI backend ready")
+    print(f"[OK] Default model: {settings.DEFAULT_MODEL}")
+    print("[OK] ECG Cardiac AI backend ready")
     yield
     # ── Shutdown ──────────────────────────────────────────────────────────
     print("Shutting down ECG Cardiac AI backend…")
