@@ -64,7 +64,7 @@ def generate_medical_report(user_name: str, record_data: dict) -> BytesIO:
     elements = []
 
     # 1. Header
-    elements.append(Paragraph("DeepGuard AI - Medical Report", header_style))
+    elements.append(Paragraph("CardioAI - Medical Report", header_style))
     elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
     elements.append(Spacer(1, 0.3 * inch))
 

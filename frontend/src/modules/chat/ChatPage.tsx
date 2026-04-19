@@ -32,9 +32,9 @@ const i18n: Record<Lang, {
   suggestions: { icon: any; text: string }[];
 }> = {
   en: {
-    title: 'DeepGuard AI Assistant',
-    subtitle: 'Cardiac AI · Powered by DeepGuard Knowledge Base',
-    welcome: "Hello! I'm DeepGuard's AI Assistant 🩺\n\nI'm here to help you understand your ECG results, explain cardiac conditions, and guide you through the platform.\n\nHow can I help you today?",
+    title: 'CardioAI Assistant',
+    subtitle: 'Cardiac AI · Powered by CardioAI Knowledge Base',
+    welcome: "Hello! I'm CardioAI's Assistant 🩺\n\nI'm here to help you understand your ECG results, explain cardiac conditions, and guide you through the platform.\n\nHow can I help you today?",
     placeholder: 'Ask about ECG results, cardiac conditions, or platform features...',
     disclaimer: 'AI responses are for informational purposes only and do not constitute medical advice. Always consult a physician.',
     suggested_label: 'Suggested questions',
@@ -45,14 +45,14 @@ const i18n: Record<Lang, {
     suggestions: [
       { icon: Heart,    text: 'What is Atrial Fibrillation?' },
       { icon: Activity, text: 'How does the ECG analysis work?' },
-      { icon: Zap,      text: 'What models does DeepGuard use?' },
+      { icon: Zap,      text: 'What models does CardioAI use?' },
       { icon: Shield,   text: 'What should I do if MI is detected?' },
     ],
   },
   fr: {
-    title: 'Assistant IA DeepGuard',
-    subtitle: 'IA Cardiaque · Propulsé par la base de connaissances DeepGuard',
-    welcome: "Bonjour ! Je suis l'Assistant IA de DeepGuard 🩺\n\nJe suis ici pour vous aider à comprendre vos résultats ECG, expliquer les conditions cardiaques et vous guider dans la plateforme.\n\nComment puis-je vous aider aujourd'hui ?",
+    title: 'Assistant IA CardioAI',
+    subtitle: 'IA Cardiaque · Propulsé par la base de connaissances CardioAI',
+    welcome: "Bonjour ! Je suis l'Assistant IA de CardioAI 🩺\n\nJe suis ici pour vous aider à comprendre vos résultats ECG, expliquer les conditions cardiaques et vous guider dans la plateforme.\n\nComment puis-je vous aider aujourd'hui ?",
     placeholder: 'Posez une question sur votre ECG, les maladies cardiaques ou la plateforme...',
     disclaimer: 'Les réponses de l\'IA sont à titre informatif uniquement et ne constituent pas un avis médical. Consultez toujours un médecin.',
     suggested_label: 'Questions suggérées',
@@ -63,14 +63,14 @@ const i18n: Record<Lang, {
     suggestions: [
       { icon: Heart,    text: 'Qu\'est-ce que la fibrillation auriculaire ?' },
       { icon: Activity, text: 'Comment fonctionne l\'analyse ECG ?' },
-      { icon: Zap,      text: 'Quels modèles IA utilise DeepGuard ?' },
+      { icon: Zap,      text: 'Quels modèles IA utilise CardioAI ?' },
       { icon: Shield,   text: 'Que faire si un infarctus est détecté ?' },
     ],
   },
   ar: {
-    title: 'مساعد DeepGuard الذكي',
-    subtitle: 'ذكاء اصطناعي قلبي · مدعوم بقاعدة معرفة DeepGuard',
-    welcome: "مرحباً! أنا مساعد الذكاء الاصطناعي من DeepGuard 🩺\n\nأنا هنا لمساعدتك في فهم نتائج تخطيط القلب، وشرح الحالات القلبية، وإرشادك عبر المنصة.\n\nكيف يمكنني مساعدتك اليوم؟",
+    title: 'مساعد CardioAI الذكي',
+    subtitle: 'ذكاء اصطناعي قلبي · مدعوم بقاعدة معرفة CardioAI',
+    welcome: "مرحباً! أنا مساعد الذكاء الاصطناعي من CardioAI 🩺\n\nأنا هنا لمساعدتك في فهم نتائج تخطيط القلب، وشرح الحالات القلبية، وإرشادك عبر المنصة.\n\nكيف يمكنني مساعدتك اليوم؟",
     placeholder: 'اسأل عن نتائج الـ ECG أو الأمراض القلبية أو ميزات المنصة...',
     disclaimer: 'إجابات الذكاء الاصطناعي لأغراض إعلامية فقط ولا تُشكّل مشورة طبية. استشر طبيبك دائماً.',
     suggested_label: 'أسئلة مقترحة',
@@ -81,14 +81,14 @@ const i18n: Record<Lang, {
     suggestions: [
       { icon: Heart,    text: 'ما هو الرجفان الأذيني؟' },
       { icon: Activity, text: 'كيف يعمل تحليل الـ ECG؟' },
-      { icon: Zap,      text: 'ما هي نماذج الذكاء الاصطناعي التي يستخدمها DeepGuard؟' },
+      { icon: Zap,      text: 'ما هي نماذج الذكاء الاصطناعي التي يستخدمها CardioAI؟' },
       { icon: Shield,   text: 'ماذا أفعل إذا اكتُشف احتشاء عضلة القلب؟' },
     ],
   },
   auto: {
-    title: 'DeepGuard AI Assistant',
+    title: 'CardioAI Assistant',
     subtitle: 'Auto-detect · Responds in your question\'s language',
-    welcome: "Hello! I'm DeepGuard's AI Assistant 🩺\n\nI automatically detect the language of your question and respond accordingly.\n\nFeel free to ask in English, French, or Arabic!",
+    welcome: "Hello! I'm CardioAI's Assistant 🩺\n\nI automatically detect the language of your question and respond accordingly.\n\nFeel free to ask in English, French, or Arabic!",
     placeholder: 'Ask in English, French, or Arabic...',
     disclaimer: 'AI responses are for informational purposes only. Always consult a physician.',
     suggested_label: 'Quick questions',

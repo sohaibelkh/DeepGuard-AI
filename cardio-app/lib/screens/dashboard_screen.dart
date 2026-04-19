@@ -74,7 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
            final anchor = html.document.createElement('a') as html.AnchorElement
              ..href = url
              ..style.display = 'none'
-             ..download = 'DeepGuard_Report_$recordId.pdf';
+             ..download = 'CardioAI_Report_$recordId.pdf';
            html.document.body!.children.add(anchor);
            anchor.click();
            html.document.body!.children.remove(anchor);
@@ -88,7 +88,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         try {
           final dir = await getApplicationDocumentsDirectory();
           final timestamp = DateTime.now().millisecondsSinceEpoch;
-          final file = File('${dir.path}/DeepGuard_Report_${recordId}_$timestamp.pdf');
+          final file = File('${dir.path}/CardioAI_Report_${recordId}_$timestamp.pdf');
           await file.writeAsBytes(bytes);
           
           if (mounted) {

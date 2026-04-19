@@ -1,6 +1,6 @@
 {
-    "name": "cardio_app",
-    "short_name": "cardio_app",
+    "name": "CardioAI",
+    "short_name": "CardioAI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

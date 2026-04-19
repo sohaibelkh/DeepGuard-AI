@@ -2,7 +2,7 @@
 Chatbot Route
 ================
 Provides an interface to interact with the LLM (Groq) using RAG (ChromaDB)
-based on the DeepGuard-AI platform knowledge base documentation.
+based on the CardioAI platform knowledge base documentation.
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ def get_vector_db():
     global _db_vector
     if _db_vector is None:
         db_dir = Path(settings.VECTOR_DB_DIR)
-        knowledge_base_path = Path("data/deepguard_chatbot_knowledge.md")
+        knowledge_base_path = Path("data/cardioai_chatbot_knowledge.md")
         print(f"Initializing Vector DB at {db_dir}...")
 
         # Always rebuild if knowledge base exists and DB is missing or empty
@@ -64,7 +64,7 @@ def get_vector_db():
                 _db_vector = Chroma(persist_directory=str(db_dir), embedding_function=get_embedding_model())
                 return _db_vector
 
-            print(f"Loading DeepGuard knowledge base from {knowledge_base_path}...")
+            print(f"Loading CardioAI knowledge base from {knowledge_base_path}...")
             # Load as plain text (markdown)
             loader = TextLoader(str(knowledge_base_path), encoding="utf-8")
             docs = loader.load()
@@ -83,7 +83,7 @@ def get_vector_db():
                 embedding=get_embedding_model(),
                 persist_directory=str(db_dir)
             )
-            print("Vector DB created successfully from DeepGuard knowledge base.")
+            print("Vector DB created successfully from CardioAI knowledge base.")
         else:
             print("Loading existing Vector DB...")
             _db_vector = Chroma(persist_directory=str(db_dir), embedding_function=get_embedding_model())
@@ -132,10 +132,10 @@ async def chat(request: ChatRequest, user: User = Depends(get_current_user)):
         
         # Multilingual prompt
         prompt = (
-            f"You are DeepGuard AI Assistant, a specialized medical AI assistant for the DeepGuard-AI cardiac ECG analysis platform.\n"
+            f"You are CardioAI Assistant, a specialized medical AI assistant for the CardioAI cardiac ECG analysis platform.\n"
             f"Your role is to help users understand their ECG results, cardiac conditions, and how to use the platform.\n\n"
             f"LANGUAGE RULE: {language_instruction}\n\n"
-            f"Use the following context from the DeepGuard platform knowledge base to answer the question:\n"
+            f"Use the following context from the CardioAI platform knowledge base to answer the question:\n"
             f"---\n{context}\n---\n\n"
             f"User question: {question}\n\n"
             f"Instructions:\n"

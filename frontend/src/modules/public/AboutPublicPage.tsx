@@ -11,7 +11,7 @@ export const AboutPublicPage: React.FC = () => {
             <Shield className="h-4 w-4 text-[#a5c422]" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold tracking-tight">DeepGuard AI</p>
+            <p className="text-sm font-semibold tracking-tight">CardioAI</p>
             <p className="text-[10px] text-slate-500">Deepfake Threat Intelligence</p>
           </div>
         </Link>
@@ -35,13 +35,13 @@ export const AboutPublicPage: React.FC = () => {
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#a5c422]">
-              About DeepGuard
+              About CardioAI
             </p>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               A detection surface designed for security and fraud teams.
             </h1>
             <p className="max-w-xl text-sm text-slate-300">
-              DeepGuard AI gives SOC analysts, fraud investigators, and trust &amp; safety teams a
+              CardioAI gives SOC analysts, fraud investigators, and trust &amp; safety teams a
               dedicated console to inspect high‑risk media, detect deepfake manipulation, and
               operationalize response playbooks across their organisation.
             </p>
@@ -77,7 +77,7 @@ export const AboutPublicPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#a5c422]" />
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                Why teams choose DeepGuard
+                Why teams choose CardioAI
               </p>
             </div>
             <ul className="space-y-3 text-xs text-slate-300">

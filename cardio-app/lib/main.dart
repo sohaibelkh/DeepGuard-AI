@@ -13,7 +13,7 @@ class CardioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cardio App',
+      title: 'CardioAI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
@@ -123,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     const SizedBox(height: 32),
                     
                     const Text(
-                      'Cardio App',
+                      'CardioAI',
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w800,

@@ -11,7 +11,7 @@ export const MissionPublicPage: React.FC = () => {
             <Shield className="h-4 w-4 text-[#a5c422]" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold tracking-tight">DeepGuard AI</p>
+            <p className="text-sm font-semibold tracking-tight">CardioAI</p>
             <p className="text-[10px] text-slate-500">Deepfake Threat Intelligence</p>
           </div>
         </Link>
@@ -41,7 +41,7 @@ export const MissionPublicPage: React.FC = () => {
           </h1>
           <p className="max-w-2xl text-sm text-slate-300">
             Deepfake content is no longer a novelty problem. It&apos;s a live signal in fraud,
-            social engineering, and reputation attacks. DeepGuard AI exists to give defenders the
+            social engineering, and reputation attacks. CardioAI exists to give defenders the
             same level of visibility and tooling around deepfakes that they already expect for
             network, endpoint, and identity threats.
           </p>
@@ -88,7 +88,7 @@ export const MissionPublicPage: React.FC = () => {
 
         <section className="rounded-xl border border-slate-800 bg-slate-950/70 p-5 text-xs text-slate-300">
           <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-            How DeepGuard fits
+            How CardioAI fits
           </p>
           <p className="mt-2">
             Our goal isn&apos;t to replace your existing security stack. It&apos;s to add a missing
@@ -98,7 +98,7 @@ export const MissionPublicPage: React.FC = () => {
           </p>
           <p className="mt-3">
             Whether you&apos;re defending a marketplace, financial services, or a public brand,
-            DeepGuard gives your teams one place to triage, investigate and report on deepfake
+            CardioAI gives your teams one place to triage, investigate and report on deepfake
             activity.
           </p>
         </section>

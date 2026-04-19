@@ -38,37 +38,37 @@ class _ChatScreenState extends State<ChatScreen> {
 
   static const Map<String, Map<String, dynamic>> i18n = {
     'en': {
-      'title': 'DeepGuard AI Assistant',
-      'subtitle': 'Cardiac AI • Powered by DeepGuard',
-      'welcome': "Hello! I'm DeepGuard's AI Assistant 🩺\n\nI'm here to help you understand your ECG results, explain cardiac conditions, and guide you through the platform.\n\nHow can I help you today?",
+      'title': 'CardioAI Assistant',
+      'subtitle': 'Cardiac AI • Powered by CardioAI',
+      'welcome': "Hello! I'm CardioAI's Assistant 🩺\n\nI'm here to help you understand your ECG results, explain cardiac conditions, and guide you through the platform.\n\nHow can I help you today?",
       'placeholder': 'Ask about ECG results...',
       'disclaimer': 'AI responses are for informational purposes only. Always consult a physician.',
       'suggestions_label': 'SUGGESTED QUESTIONS',
       'suggestions': [
         {'icon': Icons.monitor_heart_rounded, 'text': 'What is Atrial Fibrillation?'},
         {'icon': Icons.analytics_rounded, 'text': 'How does the ECG analysis work?'},
-        {'icon': Icons.bolt_rounded, 'text': 'What models does DeepGuard use?'},
+        {'icon': Icons.bolt_rounded, 'text': 'What models does CardioAI use?'},
         {'icon': Icons.security_rounded, 'text': 'What should I do if MI is detected?'},
       ]
     },
     'fr': {
-      'title': 'Assistant IA DeepGuard',
-      'subtitle': 'IA Cardiaque • Propulsé par DeepGuard',
-      'welcome': "Bonjour ! Je suis l'Assistant IA de DeepGuard 🩺\n\nJe suis ici pour vous aider à comprendre vos résultats ECG, expliquer les conditions cardiaques et vous guider dans la plateforme.\n\nComment puis-je vous aider aujourd'hui ?",
+      'title': 'Assistant IA CardioAI',
+      'subtitle': 'IA Cardiaque • Propulsé par CardioAI',
+      'welcome': "Bonjour ! Je suis l'Assistant IA de CardioAI 🩺\n\nJe suis ici pour vous aider à comprendre vos résultats ECG, expliquer les conditions cardiaques et vous guider dans la plateforme.\n\nComment puis-je vous aider aujourd'hui ?",
       'placeholder': 'Posez une question sur votre ECG...',
       'disclaimer': 'Les réponses de l\'IA sont à titre informatif uniquement. Consultez toujours un médecin.',
       'suggestions_label': 'QUESTIONS SUGGÉRÉES',
       'suggestions': [
         {'icon': Icons.monitor_heart_rounded, 'text': 'Qu\'est-ce que la fibrillation auriculaire ?'},
         {'icon': Icons.analytics_rounded, 'text': 'Comment fonctionne l\'analyse ECG ?'},
-        {'icon': Icons.bolt_rounded, 'text': 'Quels modèles utilise DeepGuard ?'},
+        {'icon': Icons.bolt_rounded, 'text': 'Quels modèles utilise CardioAI ?'},
         {'icon': Icons.security_rounded, 'text': 'Que faire si un infarctus est détecté ?'},
       ]
     },
     'ar': {
-      'title': 'مساعد DeepGuard الذكي',
-      'subtitle': 'ذكاء اصطناعي قلبي • مدعوم بـ DeepGuard',
-      'welcome': "مرحباً! أنا مساعد الذكاء الاصطناعي من DeepGuard 🩺\n\nأنا هنا لمساعدتك في فهم نتائج تخطيط القلب، وشرح الحالات القلبية، وإرشادك عبر المنصة.\n\nكيف يمكنني مساعدتك اليوم؟",
+      'title': 'مساعد CardioAI الذكي',
+      'subtitle': 'ذكاء اصطناعي قلبي • مدعوم بـ CardioAI',
+      'welcome': "مرحباً! أنا مساعد الذكاء الاصطناعي من CardioAI 🩺\n\nأنا هنا لمساعدتك في فهم نتائج تخطيط القلب، وشرح الحالات القلبية، وإرشادك عبر المنصة.\n\nكيف يمكنني مساعدتك اليوم؟",
       'placeholder': 'اسأل عن نتائج الـ ECG...',
       'disclaimer': 'إجابات الذكاء الاصطناعي لأغراض إعلامية فقط. استشر طبيبك دائماً.',
       'suggestions_label': 'أسئلة مقترحة',
@@ -80,9 +80,9 @@ class _ChatScreenState extends State<ChatScreen> {
       ]
     },
     'auto': {
-      'title': 'DeepGuard AI Assistant',
+      'title': 'CardioAI Assistant',
       'subtitle': 'Auto-detect • Responds in your language',
-      'welcome': "Hello! I'm DeepGuard's AI Assistant 🩺\n\nI automatically detect the language of your question and respond accordingly.\n\nFeel free to ask in English, French, or Arabic!",
+      'welcome': "Hello! I'm CardioAI's Assistant 🩺\n\nI automatically detect the language of your question and respond accordingly.\n\nFeel free to ask in English, French, or Arabic!",
       'placeholder': 'Ask in English, French, or Arabic...',
       'disclaimer': 'AI responses are for informational purposes only. Always consult a physician.',
       'suggestions_label': 'QUICK QUESTIONS',
